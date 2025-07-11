@@ -3,7 +3,7 @@ module github.com/curtisnewbie/miso-dify
 go 1.23.7
 
 require (
-	github.com/curtisnewbie/miso v0.2.1
+	github.com/curtisnewbie/miso v0.2.3
 	github.com/tmaxmax/go-sse v0.10.0
 )
 
@@ -57,6 +57,7 @@ require (
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.32.1 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
+	github.com/robfig/cron v1.2.0 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/shirou/gopsutil v3.21.11+incompatible // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
