@@ -25,7 +25,7 @@ type apiMsgFeedbackReq struct {
 }
 
 func SendMsgFeedback(rail miso.Rail, host string, apiKey string, req MsgFeedbackReq) error {
-	url := host + fmt.Sprintf("/v1/messages/%v/feebacks", req.MessageId)
+	url := host + fmt.Sprintf("/v1/messages/%v/feedbacks", req.MessageId)
 	var rating *string = nil // nil: cancel rating
 	if req.Rating != "" {
 		rating = &req.Rating
