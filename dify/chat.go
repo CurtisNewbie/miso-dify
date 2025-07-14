@@ -18,6 +18,11 @@ const (
 	EventTypeMessageEnd       = "message_end"
 )
 
+const (
+	TransferMethodRemoteUrl = "remote_url"
+	TransferMethodLocalFile = "local_file"
+)
+
 type ChatMessageReq struct {
 	Query          string            `json:"query"`
 	ResponseMode   string            `json:"response_mode"`
@@ -74,6 +79,15 @@ type RetrieverResource struct {
 }
 
 func StreamQueryChatBot(rail miso.Rail, host string, apiKey string, req ChatMessageReq) (ChatMessageRes, error) {
+	for i, f := range req.Files {
+		if f.UploadFileId != "" {
+			f.TransferMethod = TransferMethodLocalFile
+		} else if f.Url != "" {
+			f.TransferMethod = TransferMethodRemoteUrl
+		}
+		req.Files[i] = f
+	}
+
 	url := host + "/v1/chat-messages"
 	req.ResponseMode = "streaming"
 	var res ChatMessageRes
