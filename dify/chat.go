@@ -163,7 +163,7 @@ func ApiStreamQueryChatBot(rail miso.Rail, host string, relUrl string, apiKey st
 
 func StreamQueryChatBotPiped(rail miso.Rail, service string, relUrl string, req any, onAnswerChanged func(answer string)) (ChatMessageRes, error) {
 	var res ChatMessageRes
-	err := miso.NewDynTClient(rail, service, relUrl).
+	err := miso.NewDynTClient(rail, relUrl, service).
 		Require2xx().
 		PostJson(&req).
 		Sse(func(e sse.Event) (stop bool, err error) {
