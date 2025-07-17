@@ -15,6 +15,7 @@ const (
 	EventTypeAgentMessage     = "agent_message"
 	EventTypeMessage          = "message"
 	EventTypeError            = "error"
+	EventTypeRewriteMessageId = "miso_rewrite_message_id"
 	EventTypeWorkflowFinished = "workflow_finished"
 	EventTypeMessageEnd       = "message_end"
 )
@@ -144,6 +145,8 @@ func ApiStreamQueryChatBot(rail miso.Rail, host string, relUrl string, apiKey st
 				res.ErrorMsg += fmt.Sprintf("%v %v, %v", cme.Code, cme.Status, cme.Message)
 			case EventTypeMessageEnd:
 				res.RetrieverResources = append(res.RetrieverResources, cme.Metadata.RetrieverResources...)
+			case EventTypeRewriteMessageId:
+				res.MessageId = cme.MessageId
 			default:
 				rail.Debugf("->> %#v", cme)
 			}
@@ -205,6 +208,8 @@ func StreamQueryChatBotPiped(rail miso.Rail, service string, relUrl string, req 
 				res.ErrorMsg += fmt.Sprintf("%v %v, %v", cme.Code, cme.Status, cme.Message)
 			case EventTypeMessageEnd:
 				res.RetrieverResources = append(res.RetrieverResources, cme.Metadata.RetrieverResources...)
+			case EventTypeRewriteMessageId:
+				res.MessageId = cme.MessageId
 			default:
 				rail.Debugf("->> %#v", cme)
 			}
@@ -222,15 +227,12 @@ func StreamQueryChatBotPiped(rail miso.Rail, service string, relUrl string, req 
 	return res, nil
 }
 
-func ProxyStreamQueryChatBot(rail miso.Rail, host string, apiKey string, req ChatMessageReq, w http.ResponseWriter, r *http.Request, rewrite ...func(e sse.Event) sse.Event) (ChatMessageRes, error) {
+func ProxyStreamQueryChatBot(rail miso.Rail, host string, apiKey string, req ChatMessageReq, w http.ResponseWriter, r *http.Request, append ...func() string) (ChatMessageRes, error) {
 	sess, err := sse.Upgrade(w, r)
 	if err != nil {
 		return ChatMessageRes{}, err
 	}
-	return ApiStreamQueryChatBot(rail, host, "/v1/chat-messages", apiKey, req, func(answer string) {}, func(e sse.Event) error {
-		for _, doRewrite := range rewrite {
-			e = doRewrite(e)
-		}
+	res, err := ApiStreamQueryChatBot(rail, host, "/v1/chat-messages", apiKey, req, func(answer string) {}, func(e sse.Event) error {
 		// proxy the sse events to downstream
 		m := &sse.Message{}
 		m.AppendData(e.Data)
@@ -239,4 +241,12 @@ func ProxyStreamQueryChatBot(rail miso.Rail, host string, apiKey string, req Cha
 		}
 		return nil
 	})
+	for _, ext := range append {
+		m := &sse.Message{}
+		m.AppendData(ext())
+		if err := sess.Send(m); err != nil {
+			rail.Warnf("Failed to append sse event, %v", err)
+		}
+	}
+	return res, err
 }
