@@ -222,12 +222,15 @@ func StreamQueryChatBotPiped(rail miso.Rail, service string, relUrl string, req 
 	return res, nil
 }
 
-func ProxyStreamQueryChatBot(rail miso.Rail, host string, apiKey string, req ChatMessageReq, w http.ResponseWriter, r *http.Request) (ChatMessageRes, error) {
+func ProxyStreamQueryChatBot(rail miso.Rail, host string, apiKey string, req ChatMessageReq, w http.ResponseWriter, r *http.Request, rewrite ...func(e sse.Event) sse.Event) (ChatMessageRes, error) {
 	sess, err := sse.Upgrade(w, r)
 	if err != nil {
 		return ChatMessageRes{}, err
 	}
 	return ApiStreamQueryChatBot(rail, host, "/v1/chat-messages", apiKey, req, func(answer string) {}, func(e sse.Event) error {
+		for _, doRewrite := range rewrite {
+			e = doRewrite(e)
+		}
 		// proxy the sse events to downstream
 		m := &sse.Message{}
 		m.AppendData(e.Data)
