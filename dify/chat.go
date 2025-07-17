@@ -80,12 +80,10 @@ type RetrieverResource struct {
 }
 
 func StreamQueryChatBot(rail miso.Rail, host string, apiKey string, req ChatMessageReq) (ChatMessageRes, error) {
-	return ApiStreamQueryChatBot(rail, host, "/v1/chat-messages", false, apiKey, req, nil, nil)
+	return ApiStreamQueryChatBot(rail, host, "/v1/chat-messages", apiKey, req, nil, nil)
 }
 
-func ApiStreamQueryChatBot(rail miso.Rail, host string, relUrl string, dynamic bool, apiKey string, req ChatMessageReq,
-	onAnswerChanged func(answer string), onSseEvent func(e sse.Event) error) (ChatMessageRes, error) {
-
+func ApiStreamQueryChatBot(rail miso.Rail, host string, relUrl string, apiKey string, req ChatMessageReq, onAnswerChanged func(answer string), onSseEvent func(e sse.Event) error) (ChatMessageRes, error) {
 	for i, f := range req.Files {
 		if f.UploadFileId != "" {
 			f.TransferMethod = TransferMethodLocalFile
@@ -95,17 +93,10 @@ func ApiStreamQueryChatBot(rail miso.Rail, host string, relUrl string, dynamic b
 		req.Files[i] = f
 	}
 
-	var c *miso.TClient
-	if dynamic {
-		c = miso.NewDynTClient(rail, relUrl, host)
-	} else {
-		url := host + relUrl
-		c = miso.NewTClient(rail, url)
-	}
-
+	url := host + relUrl
 	req.ResponseMode = "streaming"
 	var res ChatMessageRes
-	err := c.
+	err := miso.NewTClient(rail, url).
 		Require2xx().
 		AddHeader("Authorization", "Bearer "+apiKey).
 		PostJson(&req).
@@ -170,12 +161,73 @@ func ApiStreamQueryChatBot(rail miso.Rail, host string, relUrl string, dynamic b
 	return res, nil
 }
 
+func StreamQueryChatBotPiped(rail miso.Rail, service string, relUrl string, req any, onAnswerChanged func(answer string)) (ChatMessageRes, error) {
+	var res ChatMessageRes
+	err := miso.NewDynTClient(rail, service, relUrl).
+		Require2xx().
+		PostJson(&req).
+		Sse(func(e sse.Event) (stop bool, err error) {
+			if e.Data == "" {
+				return false, nil
+			}
+			if miso.IsShuttingDown() {
+				return true, miso.ErrServerShuttingDown.New()
+			}
+			var cme ChatMessageEvent
+			if err := json.SParseJson(e.Data, &cme); err != nil {
+				return true, miso.WrapErrf(err, "parse streaming event failed, %v", e.Data)
+			}
+
+			if util.EqualAnyStr(cme.Event, EventTypeAgentThrought, EventTypeAgentMessage, EventTypeMessage, EventTypeError) {
+				if cme.ConversationId != "" {
+					res.ConversationId = cme.ConversationId
+				}
+				if cme.MessageId != "" {
+					res.MessageId = cme.MessageId
+				}
+			}
+			switch cme.Event {
+			case EventTypeAgentThrought:
+				res.Thought += cme.Answer
+			case EventTypeAgentMessage, EventTypeMessage:
+				// don't return when cmd.Answer == "", when the session disconnects, dify failed to update it's status, the chat get stuck on RUNNING status.
+				// https://github.com/langgenius/dify/issues/11852
+				// https://github.com/langgenius/dify/issues/20237
+				//
+				// if cme.Answer == "" {
+				// 	return true, nil
+				// }
+				res.Answer += cme.Answer
+				if onAnswerChanged != nil {
+					onAnswerChanged(res.Answer)
+				}
+			case EventTypeError:
+				res.ErrorMsg += fmt.Sprintf("%v %v, %v", cme.Code, cme.Status, cme.Message)
+			case EventTypeMessageEnd:
+				res.RetrieverResources = append(res.RetrieverResources, cme.Metadata.RetrieverResources...)
+			default:
+				rail.Debugf("->> %#v", cme)
+			}
+			return false, nil
+		}, func(c *miso.SseReadConfig) { c.MaxEventSize = 256 * 1024 })
+
+	if err != nil {
+		return ChatMessageRes{}, miso.WrapErrf(err, "StreamQueryChatBotPiped (%v, %v) failed, req: %#v", service, relUrl, req)
+	}
+
+	rail.Infof("dify StreamQueryChatBotPiped, %#v", res)
+	if res.ErrorMsg != "" {
+		return ChatMessageRes{}, miso.NewErrf("StreamQueryChatBotPiped failed, %v", res.ErrorMsg)
+	}
+	return res, nil
+}
+
 func ProxyStreamQueryChatBot(rail miso.Rail, host string, apiKey string, req ChatMessageReq, w http.ResponseWriter, r *http.Request) (ChatMessageRes, error) {
 	sess, err := sse.Upgrade(w, r)
 	if err != nil {
 		return ChatMessageRes{}, err
 	}
-	return ApiStreamQueryChatBot(rail, host, "/v1/chat-messages", false, apiKey, req, func(answer string) {}, func(e sse.Event) error {
+	return ApiStreamQueryChatBot(rail, host, "/v1/chat-messages", apiKey, req, func(answer string) {}, func(e sse.Event) error {
 		// proxy the sse events to downstream
 		m := &sse.Message{}
 		m.AppendData(e.Data)
