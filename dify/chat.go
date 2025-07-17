@@ -2,6 +2,7 @@ package dify
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/curtisnewbie/miso/encoding/json"
 	"github.com/curtisnewbie/miso/miso"
@@ -96,6 +97,91 @@ func StreamQueryChatBot(rail miso.Rail, host string, apiKey string, req ChatMess
 		AddHeader("Authorization", "Bearer "+apiKey).
 		PostJson(&req).
 		Sse(func(e sse.Event) (stop bool, err error) {
+			if e.Data == "" {
+				return false, nil
+			}
+			if miso.IsShuttingDown() {
+				return true, miso.ErrServerShuttingDown.New()
+			}
+			var cme ChatMessageEvent
+			if err := json.SParseJson(e.Data, &cme); err != nil {
+				return true, miso.WrapErrf(err, "parse streaming event failed, %v", e.Data)
+			}
+
+			if util.EqualAnyStr(cme.Event, EventTypeAgentThrought, EventTypeAgentMessage, EventTypeMessage, EventTypeError) {
+				if cme.ConversationId != "" {
+					res.ConversationId = cme.ConversationId
+				}
+				if cme.MessageId != "" {
+					res.MessageId = cme.MessageId
+				}
+			}
+			switch cme.Event {
+			case EventTypeAgentThrought:
+				res.Thought += cme.Answer
+			case EventTypeAgentMessage, EventTypeMessage:
+				// don't return when cmd.Answer == "", when the session disconnects, dify failed to update it's status, the chat get stuck on RUNNING status.
+				// https://github.com/langgenius/dify/issues/11852
+				// https://github.com/langgenius/dify/issues/20237
+				//
+				// if cme.Answer == "" {
+				// 	return true, nil
+				// }
+				res.Answer += cme.Answer
+			case EventTypeError:
+				res.ErrorMsg += fmt.Sprintf("%v %v, %v", cme.Code, cme.Status, cme.Message)
+			case EventTypeMessageEnd:
+				res.RetrieverResources = append(res.RetrieverResources, cme.Metadata.RetrieverResources...)
+			default:
+				rail.Debugf("->> %#v", cme)
+			}
+			return false, nil
+		}, func(c *miso.SseReadConfig) { c.MaxEventSize = 256 * 1024 })
+
+	if err != nil {
+		return ChatMessageRes{}, miso.WrapErrf(err, "dify /chat-messages (streaming mode) failed, req: %#v", req)
+	}
+
+	rail.Infof("dify StreamQueryChatBot, %#v", res)
+	if res.ErrorMsg != "" {
+		return ChatMessageRes{}, miso.NewErrf("StreamQueryChatBot failed, %v", res.ErrorMsg)
+	}
+	return res, nil
+}
+
+func ProxyStreamQueryChatBot(rail miso.Rail, host string, apiKey string, req ChatMessageReq, w http.ResponseWriter, r *http.Request) (ChatMessageRes, error) {
+	for i, f := range req.Files {
+		if f.UploadFileId != "" {
+			f.TransferMethod = TransferMethodLocalFile
+		} else if f.Url != "" {
+			f.TransferMethod = TransferMethodRemoteUrl
+		}
+		req.Files[i] = f
+	}
+
+	url := host + "/v1/chat-messages"
+	req.ResponseMode = "streaming"
+
+	sess, err := sse.Upgrade(w, r)
+	if err != nil {
+		return ChatMessageRes{}, err
+	}
+
+	var res ChatMessageRes
+	err = miso.NewTClient(rail, url).
+		Require2xx().
+		AddHeader("Authorization", "Bearer "+apiKey).
+		PostJson(&req).
+		Sse(func(e sse.Event) (stop bool, err error) {
+			{
+				// proxy the sse events to downstream
+				m := &sse.Message{}
+				m.AppendData(e.Data)
+				if err := sess.Send(m); err != nil {
+					rail.Warnf("Failed to proxy sse event, %v", err)
+				}
+			}
+
 			if e.Data == "" {
 				return false, nil
 			}
