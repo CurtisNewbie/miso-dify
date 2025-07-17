@@ -80,10 +80,12 @@ type RetrieverResource struct {
 }
 
 func StreamQueryChatBot(rail miso.Rail, host string, apiKey string, req ChatMessageReq) (ChatMessageRes, error) {
-	return ApiStreamQueryChatBot(rail, host, "/v1/chat-messages", apiKey, req, nil, nil)
+	return ApiStreamQueryChatBot(rail, host, "/v1/chat-messages", false, apiKey, req, nil, nil)
 }
 
-func ApiStreamQueryChatBot(rail miso.Rail, host string, relUrl string, apiKey string, req ChatMessageReq, onAnswerChanged func(answer string), onSseEvent func(e sse.Event) error) (ChatMessageRes, error) {
+func ApiStreamQueryChatBot(rail miso.Rail, host string, relUrl string, dynamic bool, apiKey string, req ChatMessageReq,
+	onAnswerChanged func(answer string), onSseEvent func(e sse.Event) error) (ChatMessageRes, error) {
+
 	for i, f := range req.Files {
 		if f.UploadFileId != "" {
 			f.TransferMethod = TransferMethodLocalFile
@@ -93,10 +95,17 @@ func ApiStreamQueryChatBot(rail miso.Rail, host string, relUrl string, apiKey st
 		req.Files[i] = f
 	}
 
-	url := host + relUrl
+	var c *miso.TClient
+	if dynamic {
+		c = miso.NewDynTClient(rail, relUrl, host)
+	} else {
+		url := host + relUrl
+		c = miso.NewTClient(rail, url)
+	}
+
 	req.ResponseMode = "streaming"
 	var res ChatMessageRes
-	err := miso.NewTClient(rail, url).
+	err := c.
 		Require2xx().
 		AddHeader("Authorization", "Bearer "+apiKey).
 		PostJson(&req).
@@ -166,7 +175,7 @@ func ProxyStreamQueryChatBot(rail miso.Rail, host string, apiKey string, req Cha
 	if err != nil {
 		return ChatMessageRes{}, err
 	}
-	return ApiStreamQueryChatBot(rail, host, "/v1/chat-messages", apiKey, req, func(answer string) {}, func(e sse.Event) error {
+	return ApiStreamQueryChatBot(rail, host, "/v1/chat-messages", false, apiKey, req, func(answer string) {}, func(e sse.Event) error {
 		// proxy the sse events to downstream
 		m := &sse.Message{}
 		m.AppendData(e.Data)
