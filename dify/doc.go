@@ -79,6 +79,49 @@ type DifyDocument struct {
 	WordCount int `json:"word_count"`
 }
 
+type DocSegment struct {
+	Content  string   `json:"content"`
+	Answer   string   `json:"answer"`
+	Keywords []string `json:"keywords"`
+}
+
+type AddDocumentSegmentReq struct {
+	DatasetId  string       `valid:"notEmpty"`
+	DocumentId string       `valid:"trim"`
+	Segments   []DocSegment `json:"segments"`
+}
+
+type AddDocumentSegmentRes struct {
+	Id       string
+	Position int
+
+	// more fields to be added
+}
+
+type addDocumentSegmentApiRes struct {
+	Data []AddDocumentSegmentRes
+}
+
+type addDocumentSegmentApiReq struct {
+	Segments []DocSegment `json:"segments"`
+}
+
+func AddDocumentSegment(rail miso.Rail, host string, apiKey string, req AddDocumentSegmentReq) ([]AddDocumentSegmentRes, error) {
+	url := host + fmt.Sprintf("/v1/datasets/%v/documents/%v/segments", req.DatasetId, req.DocumentId)
+
+	var res addDocumentSegmentApiRes
+	err := miso.NewTClient(rail, url).
+		Require2xx().
+		AddHeader("Authorization", "Bearer "+apiKey).
+		PostJson(addDocumentSegmentApiReq{Segments: req.Segments}).
+		Json(&res)
+	if err != nil {
+		return nil, miso.WrapErrf(err, "dify.AddDocumentSegment failed, req: %#v", req)
+	}
+	rail.Infof("Added dify document segment, %v", res)
+	return res.Data, nil
+}
+
 type UploadDocumentRes struct {
 	Document DifyDocument
 }
