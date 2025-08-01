@@ -232,3 +232,61 @@ func fixFilename(s string) string {
 	s, _ = strings.CutSuffix(s, "\"")
 	return s
 }
+
+type CreateDocumentReq struct {
+	DatasetId         string `valid:"notEmpty"`
+	Name              string
+	Text              string
+	IndexingTechnique string
+	DocForm           string
+	DocType           string
+	ProcessRule       ProcessRule
+}
+
+type CreateDocumentApiReq struct {
+	Name              string      `json:"name"`
+	Text              string      `json:"text"`
+	IndexingTechnique string      `json:"indexing_technique"`
+	DocForm           string      `json:"doc_form"`
+	DocType           string      `json:"doc_type"`
+	ProcessRule       ProcessRule `json:"process_rule"`
+}
+
+func CreateDocument(rail miso.Rail, host string, apiKey string, req CreateDocumentReq) (UploadDocumentRes, error) {
+	req.Name = fixFilename(req.Name)
+	url := host + fmt.Sprintf("/v1/datasets/%v/document/create-by-text", req.DatasetId)
+
+	if req.IndexingTechnique == "" {
+		req.IndexingTechnique = "high_quality"
+	}
+	if req.DocForm == "" {
+		req.DocForm = "text_model"
+	}
+	if req.DocType == "" {
+		req.DocType = "wikipedia_entry"
+	}
+	if req.ProcessRule.Mode == "" {
+		req.ProcessRule.Mode = "automatic"
+	}
+
+	apiReq := CreateDocumentApiReq{
+		Name:              req.Name,
+		Text:              req.Text,
+		IndexingTechnique: req.IndexingTechnique,
+		DocForm:           req.DocForm,
+		DocType:           req.DocType,
+		ProcessRule:       req.ProcessRule,
+	}
+
+	var res UploadDocumentRes
+	err := miso.NewTClient(rail, url).
+		Require2xx().
+		AddHeader("Authorization", "Bearer "+apiKey).
+		PostJson(req).
+		Json(&res)
+	if err != nil {
+		return res, miso.WrapErrf(err, "dify.CreateDocument failed, req: %#v, apiReq: %#v", req, apiReq)
+	}
+	rail.Infof("Created dify document, %v, %#v", req.Name, res)
+	return res, nil
+}
