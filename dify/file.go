@@ -16,14 +16,14 @@ type UploadFileRes struct {
 	MimeType  string `json:"mime_type"`
 }
 
-func UploadFile(rail miso.Rail, host string, apiKey string, user string, file *os.File) (UploadFileRes, error) {
+func UploadFile(rail miso.Rail, host string, apiKey string, user string, file *os.File, filename string) (UploadFileRes, error) {
 	url := host + "/v1/files/upload"
 	var res UploadFileRes
 	err := miso.NewTClient(rail, url).
 		Require2xx().
 		AddHeader("Authorization", "Bearer "+apiKey).
 		PostFormData(map[string]io.Reader{
-			"file": file,
+			"file": miso.NewReaderFile(file, filename),
 			"user": bytes.NewReader([]byte(user)),
 		}).
 		Json(&res)
