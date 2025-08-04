@@ -124,6 +124,7 @@ func AddDocumentSegment(rail miso.Rail, host string, apiKey string, req AddDocum
 
 type UploadDocumentRes struct {
 	Document DifyDocument
+	Batch    string
 }
 
 func UploadDocument(rail miso.Rail, host string, apiKey string, req UploadDocumentReq) (UploadDocumentRes, error) {
@@ -289,4 +290,31 @@ func CreateDocument(rail miso.Rail, host string, apiKey string, req CreateDocume
 	}
 	rail.Infof("Created dify document, %v, %#v", req.Name, res)
 	return res, nil
+}
+
+type DocIndexingStatus struct {
+	Id             string
+	IndexingStatus string
+}
+
+type GetDocIndexingStatusApiRes struct {
+	Data []DocIndexingStatus `json:"data"`
+}
+type GetDocIndexingStatusReq struct {
+	DatasetId string
+	BatchId   string
+}
+
+func GetDocIndexingStatus(rail miso.Rail, host string, apiKey string, req GetDocIndexingStatusReq) ([]DocIndexingStatus, error) {
+	url := host + fmt.Sprintf("/v1/datasets/%v/documents/%v/indexing-status", req.DatasetId, req.BatchId)
+	var res GetDocIndexingStatusApiRes
+	err := miso.NewTClient(rail, url).
+		Require2xx().
+		AddHeader("Authorization", "Bearer "+apiKey).
+		PostJson(req).
+		Json(&res)
+	if err != nil {
+		return nil, miso.WrapErrf(err, "dify.GetDocIndexingStatus failed, req: %#v", req)
+	}
+	return res.Data, nil
 }
