@@ -30,5 +30,6 @@ func UploadFile(rail miso.Rail, host string, apiKey string, user string, file *o
 	if err != nil {
 		return res, miso.WrapErrf(err, "dify UploadFile failed")
 	}
+	rail.Infof("File Uploaded %#v", res)
 	return res, nil
 }
