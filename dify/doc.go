@@ -123,6 +123,13 @@ func AddDocumentSegment(rail miso.Rail, host string, apiKey string, req AddDocum
 	return res.Data, nil
 }
 
+type AddDocumentChildSegmentRes struct {
+	Id      string
+	Content string
+
+	// more fields to be added
+}
+
 type AddDocumentChildSegmentReq struct {
 	DatasetId  string `valid:"notEmpty"`
 	DocumentId string `valid:"trim"`
@@ -134,17 +141,21 @@ type addDocumentChildSegmentApiReq struct {
 	Content string `json:"content"`
 }
 
-func AddDocumentChildSegment(rail miso.Rail, host string, apiKey string, req AddDocumentChildSegmentReq) ([]AddDocumentSegmentRes, error) {
+type addDocumentChildSegmentApiRes struct {
+	Data AddDocumentChildSegmentRes
+}
+
+func AddDocumentChildSegment(rail miso.Rail, host string, apiKey string, req AddDocumentChildSegmentReq) (AddDocumentChildSegmentRes, error) {
 	url := host + fmt.Sprintf("/v1/datasets/%v/documents/%v/segments/%v/child_chunks", req.DatasetId, req.DocumentId, req.SegmentId)
 
-	var res addDocumentSegmentApiRes
+	var res addDocumentChildSegmentApiRes
 	err := miso.NewTClient(rail, url).
 		Require2xx().
 		AddHeader("Authorization", "Bearer "+apiKey).
 		PostJson(addDocumentChildSegmentApiReq{Content: req.Content}).
 		Json(&res)
 	if err != nil {
-		return nil, miso.WrapErrf(err, "dify.AddDocumentChildSegment failed, req: %#v", req)
+		return AddDocumentChildSegmentRes{}, miso.WrapErrf(err, "dify.AddDocumentChildSegment failed, req: %#v", req)
 	}
 	rail.Infof("Added dify document child segment, %v", res)
 	return res.Data, nil
