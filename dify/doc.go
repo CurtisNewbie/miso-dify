@@ -293,8 +293,17 @@ func CreateDocument(rail miso.Rail, host string, apiKey string, req CreateDocume
 }
 
 type DocIndexingStatus struct {
-	Id             string
-	IndexingStatus string
+	Id                   string      `json:"id"`
+	IndexingStatus       string      `json:"indexing_status"`
+	ProcessingStartedAt  *util.ETime `json:"processing_started_at"`
+	ParsingCompletedAt   *util.ETime `json:"parsing_completed_at"`
+	CleaningCompletedAt  *util.ETime `json:"cleaning_completed_at"`
+	SplittingCompletedAt *util.ETime `json:"splitting_completed_at"`
+	CompletedAt          *util.ETime `json:"completed_at"`
+	PausedAt             *util.ETime `json:"paused_at"`
+	StoppedAt            *util.ETime `json:"stopped_at"`
+	CompletedSegments    int         `json:"completed_segments"`
+	TotalSegments        int         `json:"total_segments"`
 }
 
 type GetDocIndexingStatusApiRes struct {
