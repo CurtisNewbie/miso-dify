@@ -81,9 +81,9 @@ type SubchunkSegmentationParam struct {
 type UploadDocumentReq struct {
 	DatasetId          string `valid:"notEmpty"`
 	OriginalDocumentId string `valid:"trim"`
-	IndexingTechnique  string
-	DocForm            string
-	DocType            string
+	IndexingTechnique  string // high_quality, economy
+	DocForm            string // text_model, hierarchical_model, qa_model
+	DocType            string // deprecated
 	ProcessRule        ProcessRule
 	FilePath           string `valid:"notEmpty"`
 	Filename           string `valid:"notEmpty"`
