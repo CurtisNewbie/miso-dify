@@ -311,7 +311,7 @@ func GetDocIndexingStatus(rail miso.Rail, host string, apiKey string, req GetDoc
 	err := miso.NewTClient(rail, url).
 		Require2xx().
 		AddHeader("Authorization", "Bearer "+apiKey).
-		PostJson(req).
+		Get().
 		Json(&res)
 	if err != nil {
 		return nil, miso.WrapErrf(err, "dify.GetDocIndexingStatus failed, req: %#v", req)
