@@ -51,7 +51,31 @@ func GetDocument(rail miso.Rail, host string, apiKey string, req GetDocumentReq)
 }
 
 type ProcessRule struct {
-	Mode string `json:"mode"`
+	Mode  string       `json:"mode"`
+	Rules *ProcessRule `json:"rules"`
+}
+
+type ProcessRuleParam struct {
+	PreProcessingRules   PreProcessingRulesParam `json:"pre_processing_rules"`
+	Segmentation         SegmentationParam       `json:"segmentation"`
+	ParentMode           string
+	SubchunkSegmentation SubchunkSegmentationParam `json:"subchunk_segmentation"`
+}
+
+type PreProcessingRulesParam struct {
+	Id      string `json:"id"` // remove_extra_spaces, remove_urls_emails
+	Enabled bool   `json:"enabled"`
+}
+
+type SegmentationParam struct {
+	Separator string `json:"separator"`
+	MaxTokens int    `json:"max_tokens"`
+}
+
+type SubchunkSegmentationParam struct {
+	Separator    string `json:"separator"`
+	MaxTokens    int    `json:"max_tokens"`
+	ChunkOverlap int    `json:"chunk_overlap"`
 }
 
 type UploadDocumentReq struct {
