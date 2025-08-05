@@ -51,15 +51,15 @@ func GetDocument(rail miso.Rail, host string, apiKey string, req GetDocumentReq)
 }
 
 type ProcessRule struct {
-	Mode  string       `json:"mode"`  // automatic, custom, hierarchical
-	Rules *ProcessRule `json:"rules"` // nil in automatic mode
+	Mode  string            `json:"mode"`  // automatic, custom, hierarchical
+	Rules *ProcessRuleParam `json:"rules"` // nil in automatic mode
 }
 
 type ProcessRuleParam struct {
-	PreProcessingRules   PreProcessingRulesParam   `json:"pre_processing_rules"`
-	Segmentation         SegmentationParam         `json:"segmentation"`
-	ParentMode           string                    `json:"parent_mode"` // parent segment retrival mode: full-doc / paragraph
-	SubchunkSegmentation SubchunkSegmentationParam `json:"subchunk_segmentation"`
+	PreProcessingRules   *PreProcessingRulesParam   `json:"pre_processing_rules"`
+	Segmentation         *SegmentationParam         `json:"segmentation"`
+	ParentMode           *string                    `json:"parent_mode"` // parent segment retrival mode: full-doc / paragraph
+	SubchunkSegmentation *SubchunkSegmentationParam `json:"subchunk_segmentation"`
 }
 
 type PreProcessingRulesParam struct {
