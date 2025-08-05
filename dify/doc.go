@@ -56,7 +56,7 @@ type ProcessRule struct {
 }
 
 type ProcessRuleParam struct {
-	PreProcessingRules   *PreProcessingRulesParam   `json:"pre_processing_rules"`
+	PreProcessingRules   []PreProcessingRulesParam  `json:"pre_processing_rules"`
 	Segmentation         *SegmentationParam         `json:"segmentation"`
 	ParentMode           *string                    `json:"parent_mode"` // parent segment retrival mode: full-doc / paragraph
 	SubchunkSegmentation *SubchunkSegmentationParam `json:"subchunk_segmentation"`
