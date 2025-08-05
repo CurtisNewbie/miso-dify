@@ -94,6 +94,7 @@ type AddDocumentSegmentReq struct {
 type AddDocumentSegmentRes struct {
 	Id       string
 	Position int
+	Content  string
 
 	// more fields to be added
 }
