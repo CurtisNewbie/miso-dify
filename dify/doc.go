@@ -181,7 +181,7 @@ func AddDocumentChildSegment(rail miso.Rail, host string, apiKey string, req Add
 	if err != nil {
 		return AddDocumentChildSegmentRes{}, miso.WrapErrf(err, "dify.AddDocumentChildSegment failed, req: %#v", req)
 	}
-	rail.Infof("Added dify document child segment, %v", res)
+	rail.Infof("Added dify document child segment, %#v", res)
 	return res.Data, nil
 }
 
