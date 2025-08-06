@@ -153,6 +153,10 @@ func ApiStreamQueryChatBot(rail miso.Rail, newClient func() *miso.TClient, apiKe
 		AddHeader("Authorization", "Bearer "+apiKey).
 		PostJson(req).
 		Sse(func(e sse.Event) (stop bool, err error) {
+			if rail.IsDone() {
+				return true, miso.NewErrf("context is closed")
+			}
+
 			if onSse != nil {
 				if err := onSse(SseEvent(e)); err != nil {
 					return true, err
