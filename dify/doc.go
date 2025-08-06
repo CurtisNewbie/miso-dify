@@ -143,7 +143,7 @@ func AddDocumentSegment(rail miso.Rail, host string, apiKey string, req AddDocum
 	if err != nil {
 		return nil, miso.WrapErrf(err, "dify.AddDocumentSegment failed, req: %#v", req)
 	}
-	rail.Infof("Added dify document segment, %v", res)
+	rail.Infof("Added dify document segment, %#v", res)
 	return res.Data, nil
 }
 
