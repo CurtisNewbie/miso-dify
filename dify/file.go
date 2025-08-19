@@ -21,7 +21,7 @@ func UploadFile(rail miso.Rail, host string, apiKey string, user string, file *o
 	var res UploadFileRes
 	err := miso.NewTClient(rail, url).
 		Require2xx().
-		AddHeader("Authorization", "Bearer "+apiKey).
+		AddAuthBearer(apiKey).
 		PostFormData(map[string]io.Reader{
 			"file": miso.NewReaderFile(file, filename),
 			"user": bytes.NewReader([]byte(user)),

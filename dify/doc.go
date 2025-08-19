@@ -37,7 +37,7 @@ func GetDocument(rail miso.Rail, host string, apiKey string, req GetDocumentReq)
 	url := host + fmt.Sprintf("/v1/datasets/%v/documents/%v/upload-file", req.DatasetId, req.DocumentId)
 	var res GetDocumentRes
 	tr := miso.NewTClient(rail, url).
-		AddHeader("Authorization", "Bearer "+apiKey).
+		AddAuthBearer(apiKey).
 		Get()
 	if tr.StatusCode == 404 {
 		return res, ErrDocNotFound.New()
@@ -137,7 +137,7 @@ func AddDocumentSegment(rail miso.Rail, host string, apiKey string, req AddDocum
 	var res addDocumentSegmentApiRes
 	err := miso.NewTClient(rail, url).
 		Require2xx().
-		AddHeader("Authorization", "Bearer "+apiKey).
+		AddAuthBearer(apiKey).
 		PostJson(addDocumentSegmentApiReq{Segments: req.Segments}).
 		Json(&res)
 	if err != nil {
@@ -175,7 +175,7 @@ func AddDocumentChildSegment(rail miso.Rail, host string, apiKey string, req Add
 	var res addDocumentChildSegmentApiRes
 	err := miso.NewTClient(rail, url).
 		Require2xx().
-		AddHeader("Authorization", "Bearer "+apiKey).
+		AddAuthBearer(apiKey).
 		PostJson(addDocumentChildSegmentApiReq{Content: req.Content}).
 		Json(&res)
 	if err != nil {
@@ -235,7 +235,7 @@ func UploadDocument(rail miso.Rail, host string, apiKey string, req UploadDocume
 	var res UploadDocumentRes
 	err = miso.NewTClient(rail, url).
 		Require2xx().
-		AddHeader("Authorization", "Bearer "+apiKey).
+		AddAuthBearer(apiKey).
 		PostFormData(formData).
 		Json(&res)
 	if err != nil {
@@ -260,7 +260,7 @@ func RemoveDocument(rail miso.Rail, host string, apiKey string, req RemoveDocume
 	rail.Infof("Removing dify doc: %#v", req)
 	url := host + fmt.Sprintf("/v1/datasets/%v/documents/%v", req.DatasetId, req.DocumentId)
 	tr := miso.NewTClient(rail, url).
-		AddHeader("Authorization", "Bearer "+apiKey).
+		AddAuthBearer(apiKey).
 		Delete()
 	if tr.Err != nil {
 		return miso.WrapErr(tr.Err)
@@ -345,7 +345,7 @@ func CreateDocument(rail miso.Rail, host string, apiKey string, req CreateDocume
 	var res UploadDocumentRes
 	err := miso.NewTClient(rail, url).
 		Require2xx().
-		AddHeader("Authorization", "Bearer "+apiKey).
+		AddAuthBearer(apiKey).
 		PostJson(req).
 		Json(&res)
 	if err != nil {
@@ -382,7 +382,7 @@ func GetDocIndexingStatus(rail miso.Rail, host string, apiKey string, req GetDoc
 	var res GetDocIndexingStatusApiRes
 	err := miso.NewTClient(rail, url).
 		Require2xx().
-		AddHeader("Authorization", "Bearer "+apiKey).
+		AddAuthBearer(apiKey).
 		Get().
 		Json(&res)
 	if err != nil {

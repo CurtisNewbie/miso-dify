@@ -7,6 +7,7 @@ import (
 	"github.com/curtisnewbie/miso/encoding/json"
 	"github.com/curtisnewbie/miso/miso"
 	"github.com/curtisnewbie/miso/util"
+	"github.com/spf13/cast"
 	"github.com/tmaxmax/go-sse"
 )
 
@@ -26,7 +27,8 @@ const (
 )
 
 var (
-	ChatMessageUrl = "/v1/chat-messages"
+	ChatMessageUrl           = "/v1/chat-messages"
+	ConversationVariablesUrl = "/v1/conversations/%v/variables"
 )
 
 type SseEvent struct {
@@ -150,7 +152,7 @@ func ApiStreamQueryChatBot(rail miso.Rail, newClient func() *miso.TClient, apiKe
 	var res ChatMessageRes
 	err := newClient().
 		Require2xx().
-		AddHeader("Authorization", "Bearer "+apiKey).
+		AddAuthBearer(apiKey).
 		PostJson(req).
 		Sse(func(e sse.Event) (stop bool, err error) {
 			if rail.IsDone() {
@@ -243,4 +245,47 @@ func ProxyStreamQueryChatBot(rail miso.Rail, host string, apiKey string, req Cha
 		}
 	}
 	return res, err
+}
+
+type GetConversationVarRes struct {
+	Limit   int                      `json:"limit"`
+	HasMore bool                     `json:"has_more"`
+	Data    []GetConversationVarData `json:"data"`
+}
+type GetConversationVarData struct {
+	Id          string     `json:"id"`
+	Name        string     `json:"name"`
+	ValueType   string     `json:"value_type"`
+	Value       string     `json:"value"`
+	Description string     `json:"description"`
+	CreatedAt   util.ETime `json:"created_at"`
+	UpdatedAt   util.ETime `json:"updated_at"`
+}
+
+type GetConversationVarReq struct {
+	ConversationId string
+	User           string
+	LastId         *string
+	Limit          *int
+	VariableName   *string
+}
+
+func GetConversationVar(rail miso.Rail, host string, apiKey string, req GetConversationVarReq) (GetConversationVarRes, error) {
+	url := fmt.Sprintf(host+ConversationVariablesUrl, req.ConversationId)
+	var res GetConversationVarRes
+	c := miso.NewTClient(rail, url).
+		Require2xx().
+		AddAuthBearer(apiKey).
+		AddQueryParams("user", req.User)
+
+	if req.LastId != nil {
+		c = c.AddQueryParams("last_id", *req.LastId)
+	}
+	if req.Limit != nil {
+		c = c.AddQueryParams("limit", cast.ToString(*req.Limit))
+	}
+	if req.VariableName != nil {
+		c = c.AddQueryParams("variable_name", cast.ToString(*req.VariableName))
+	}
+	return res, c.Get().Json(&res)
 }

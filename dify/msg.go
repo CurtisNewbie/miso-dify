@@ -32,7 +32,7 @@ func SendMsgFeedback(rail miso.Rail, host string, apiKey string, req MsgFeedback
 	}
 	s, err := miso.NewTClient(rail, url).
 		Require2xx().
-		AddHeader("Authorization", "Bearer "+apiKey).
+		AddAuthBearer(apiKey).
 		PostJson(apiMsgFeedbackReq{
 			User:    req.User,
 			Rating:  rating,
