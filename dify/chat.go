@@ -11,6 +11,8 @@ import (
 	"github.com/tmaxmax/go-sse"
 )
 
+type ChatMessageFile = FileInput
+
 const (
 	EventTypeAgentThrought    = "agent_thought"
 	EventTypeAgentMessage     = "agent_message"
@@ -71,13 +73,6 @@ type withOnAnswerChanged interface {
 
 type withOnSseEvent interface {
 	getOnSseEvent() func(e SseEvent) error
-}
-
-type ChatMessageFile struct {
-	Type           string `json:"type"`
-	TransferMethod string `json:"transfer_method"`
-	Url            string `json:"url"`
-	UploadFileId   string `json:"upload_file_id"`
 }
 
 type ChatMessageRes struct {

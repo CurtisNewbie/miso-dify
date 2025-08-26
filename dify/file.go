@@ -8,12 +8,31 @@ import (
 	"github.com/curtisnewbie/miso/miso"
 )
 
+type FileInput struct {
+	Type           string `json:"type"`
+	TransferMethod string `json:"transfer_method"`
+	Url            string `json:"url"`
+	UploadFileId   string `json:"upload_file_id"`
+}
+
+func NewFileInputById(uploadFileId string) FileInput {
+	return FileInput{
+		Type:           "document",
+		TransferMethod: TransferMethodLocalFile,
+		UploadFileId:   uploadFileId,
+	}
+}
+
 type UploadFileRes struct {
 	Id        string `json:"id"`
 	Name      string `json:"name"`
 	Size      int    `json:"size"`
 	Extension string `json:"extension"`
 	MimeType  string `json:"mime_type"`
+}
+
+func (u UploadFileRes) ToFileInput() FileInput {
+	return NewFileInputById(u.Id)
 }
 
 func UploadFile(rail miso.Rail, host string, apiKey string, user string, file *os.File, filename string) (UploadFileRes, error) {
