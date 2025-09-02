@@ -204,7 +204,7 @@ func ApiStreamQueryChatBot(rail miso.Rail, newClient func() *miso.TClient, apiKe
 				rail.Debugf("->> %#v", cme)
 			}
 			return false, nil
-		}, func(c *miso.SseReadConfig) { c.MaxEventSize = 256 * 1024 })
+		}, func(c *miso.SseReadConfig) { c.MaxEventSize = 512 * 1024 })
 
 	if err != nil {
 		return ChatMessageRes{}, miso.WrapErrf(err, "ApiStreamQueryChatBot failed")
