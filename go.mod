@@ -5,7 +5,7 @@ go 1.24.4
 toolchain go1.24.7
 
 require (
-	github.com/curtisnewbie/miso v0.3.0-beta.1
+	github.com/curtisnewbie/miso v0.3.0
 	github.com/spf13/cast v1.6.0
 	github.com/tmaxmax/go-sse v0.10.0
 )
