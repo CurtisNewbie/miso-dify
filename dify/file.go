@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/curtisnewbie/miso/miso"
+	"github.com/curtisnewbie/miso/util/errs"
 )
 
 type FileInput struct {
@@ -38,7 +39,7 @@ func (u UploadFileRes) ToFileInput() FileInput {
 func UploadFile(rail miso.Rail, host string, apiKey string, user string, file *os.File, filename string) (UploadFileRes, error) {
 	url := host + "/v1/files/upload"
 	var res UploadFileRes
-	err := miso.NewTClient(rail, url).
+	err := miso.NewClient(rail, url).
 		Require2xx().
 		AddAuthBearer(apiKey).
 		PostFormData(map[string]io.Reader{
@@ -47,7 +48,7 @@ func UploadFile(rail miso.Rail, host string, apiKey string, user string, file *o
 		}).
 		Json(&res)
 	if err != nil {
-		return res, miso.WrapErrf(err, "dify UploadFile failed")
+		return res, errs.WrapErrf(err, "dify UploadFile failed")
 	}
 	rail.Infof("File Uploaded %#v", res)
 	return res, nil

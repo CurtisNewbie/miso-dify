@@ -7,6 +7,8 @@ import (
 	"github.com/curtisnewbie/miso/encoding/json"
 	"github.com/curtisnewbie/miso/miso"
 	"github.com/curtisnewbie/miso/util"
+	"github.com/curtisnewbie/miso/util/errs"
+	"github.com/curtisnewbie/miso/util/strutil"
 	"github.com/spf13/cast"
 	"github.com/tmaxmax/go-sse"
 )
@@ -116,7 +118,7 @@ type RetrieverResource struct {
 
 func StreamQueryChatBot(rail miso.Rail, host string, apiKey string, req ChatMessageReq) (ChatMessageRes, error) {
 	url := host + ChatMessageUrl
-	newClient := func() *miso.TClient { return miso.NewTClient(rail, url) }
+	newClient := func() *miso.TClient { return miso.NewClient(rail, url) }
 	return ApiStreamQueryChatBot(rail, newClient, apiKey, req)
 }
 
@@ -151,7 +153,7 @@ func ApiStreamQueryChatBot(rail miso.Rail, newClient func() *miso.TClient, apiKe
 		PostJson(req).
 		Sse(func(e sse.Event) (stop bool, err error) {
 			if rail.IsDone() {
-				return true, miso.NewErrf("context is closed")
+				return true, errs.NewErrf("context is closed")
 			}
 
 			if onSse != nil {
@@ -167,10 +169,10 @@ func ApiStreamQueryChatBot(rail miso.Rail, newClient func() *miso.TClient, apiKe
 			}
 			var cme ChatMessageEvent
 			if err := json.SParseJson(e.Data, &cme); err != nil {
-				return true, miso.WrapErrf(err, "parse streaming event failed, %v", e.Data)
+				return true, errs.WrapErrf(err, "parse streaming event failed, %v", e.Data)
 			}
 
-			if util.EqualAnyStr(cme.Event, EventTypeAgentThrought, EventTypeAgentMessage, EventTypeMessage, EventTypeError) {
+			if strutil.EqualAnyStr(cme.Event, EventTypeAgentThrought, EventTypeAgentMessage, EventTypeMessage, EventTypeError) {
 				if cme.ConversationId != "" {
 					res.ConversationId = cme.ConversationId
 				}
@@ -207,12 +209,12 @@ func ApiStreamQueryChatBot(rail miso.Rail, newClient func() *miso.TClient, apiKe
 		}, func(c *miso.SseReadConfig) { c.MaxEventSize = 512 * 1024 })
 
 	if err != nil {
-		return ChatMessageRes{}, miso.WrapErrf(err, "ApiStreamQueryChatBot failed")
+		return ChatMessageRes{}, errs.WrapErrf(err, "ApiStreamQueryChatBot failed")
 	}
 
 	rail.Debugf("ApiStreamQueryChatBot, %#v", res)
 	if res.ErrorMsg != "" {
-		return ChatMessageRes{}, miso.NewErrf("ApiStreamQueryChatBot failed, %v", res.ErrorMsg)
+		return ChatMessageRes{}, errs.NewErrf("ApiStreamQueryChatBot failed, %v", res.ErrorMsg)
 	}
 	return res, nil
 }
@@ -268,7 +270,7 @@ type GetConversationVarReq struct {
 func GetConversationVar(rail miso.Rail, host string, apiKey string, req GetConversationVarReq) (GetConversationVarRes, error) {
 	url := fmt.Sprintf(host+ConversationVariablesUrl, req.ConversationId)
 	var res GetConversationVarRes
-	c := miso.NewTClient(rail, url).
+	c := miso.NewClient(rail, url).
 		Require2xx().
 		AddAuthBearer(apiKey).
 		AddQueryParams("user", req.User)

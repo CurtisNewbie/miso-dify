@@ -41,7 +41,7 @@ type WorkflowRes struct {
 func RunWorkflow(rail miso.Rail, host string, apiKey string, req WorkflowReq) (WorkflowRes, error) {
 	req.ResponseMode = "blocking"
 	var res WorkflowRes
-	err := miso.NewTClient(rail, host+RunWorkflowUrl).
+	err := miso.NewClient(rail, host+RunWorkflowUrl).
 		Require2xx().
 		AddAuthBearer(apiKey).
 		PostJson(req).

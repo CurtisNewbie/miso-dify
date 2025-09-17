@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/curtisnewbie/miso/miso"
+	"github.com/curtisnewbie/miso/util/errs"
 )
 
 const (
@@ -30,7 +31,7 @@ func SendMsgFeedback(rail miso.Rail, host string, apiKey string, req MsgFeedback
 	if req.Rating != "" {
 		rating = &req.Rating
 	}
-	s, err := miso.NewTClient(rail, url).
+	s, err := miso.NewClient(rail, url).
 		Require2xx().
 		AddAuthBearer(apiKey).
 		PostJson(apiMsgFeedbackReq{
@@ -40,7 +41,7 @@ func SendMsgFeedback(rail miso.Rail, host string, apiKey string, req MsgFeedback
 		}).
 		Str()
 	if err != nil {
-		return miso.WrapErrf(err, "dify SendMsgFeedback failed")
+		return errs.WrapErrf(err, "dify SendMsgFeedback failed")
 	}
 	rail.Infof("Request success, %v", s)
 	return nil

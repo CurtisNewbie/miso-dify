@@ -10,10 +10,11 @@ import (
 	"github.com/curtisnewbie/miso/encoding/json"
 	"github.com/curtisnewbie/miso/miso"
 	"github.com/curtisnewbie/miso/util"
+	"github.com/curtisnewbie/miso/util/errs"
 )
 
 var (
-	ErrDocNotFound = miso.NewErrfCode("DOC_NOT_FOUND", "dify document not found")
+	ErrDocNotFound = errs.NewErrfCode("DOC_NOT_FOUND", "dify document not found")
 )
 
 type GetDocumentRes struct {
@@ -36,7 +37,7 @@ type GetDocumentReq struct {
 func GetDocument(rail miso.Rail, host string, apiKey string, req GetDocumentReq) (GetDocumentRes, error) {
 	url := host + fmt.Sprintf("/v1/datasets/%v/documents/%v/upload-file", req.DatasetId, req.DocumentId)
 	var res GetDocumentRes
-	tr := miso.NewTClient(rail, url).
+	tr := miso.NewClient(rail, url).
 		AddAuthBearer(apiKey).
 		Get()
 	if tr.StatusCode == 404 {
@@ -45,7 +46,7 @@ func GetDocument(rail miso.Rail, host string, apiKey string, req GetDocumentReq)
 
 	err := tr.Json(&res)
 	if err != nil {
-		return res, miso.WrapErrf(err, "dify.GetDocument failed")
+		return res, errs.WrapErrf(err, "dify.GetDocument failed")
 	}
 	return res, err
 }
@@ -135,13 +136,13 @@ func AddDocumentSegment(rail miso.Rail, host string, apiKey string, req AddDocum
 	url := host + fmt.Sprintf("/v1/datasets/%v/documents/%v/segments", req.DatasetId, req.DocumentId)
 
 	var res addDocumentSegmentApiRes
-	err := miso.NewTClient(rail, url).
+	err := miso.NewClient(rail, url).
 		Require2xx().
 		AddAuthBearer(apiKey).
 		PostJson(addDocumentSegmentApiReq{Segments: req.Segments}).
 		Json(&res)
 	if err != nil {
-		return nil, miso.WrapErrf(err, "dify.AddDocumentSegment failed, req: %#v", req)
+		return nil, errs.WrapErrf(err, "dify.AddDocumentSegment failed, req: %#v", req)
 	}
 	rail.Infof("Added dify document segment, %#v", res)
 	return res.Data, nil
@@ -173,13 +174,13 @@ func AddDocumentChildSegment(rail miso.Rail, host string, apiKey string, req Add
 	url := host + fmt.Sprintf("/v1/datasets/%v/documents/%v/segments/%v/child_chunks", req.DatasetId, req.DocumentId, req.SegmentId)
 
 	var res addDocumentChildSegmentApiRes
-	err := miso.NewTClient(rail, url).
+	err := miso.NewClient(rail, url).
 		Require2xx().
 		AddAuthBearer(apiKey).
 		PostJson(addDocumentChildSegmentApiReq{Content: req.Content}).
 		Json(&res)
 	if err != nil {
-		return AddDocumentChildSegmentRes{}, miso.WrapErrf(err, "dify.AddDocumentChildSegment failed, req: %#v", req)
+		return AddDocumentChildSegmentRes{}, errs.WrapErrf(err, "dify.AddDocumentChildSegment failed, req: %#v", req)
 	}
 	rail.Infof("Added dify document child segment, %#v", res)
 	return res.Data, nil
@@ -196,7 +197,7 @@ func UploadDocument(rail miso.Rail, host string, apiKey string, req UploadDocume
 
 	file, err := util.OpenRFile(req.FilePath)
 	if err != nil {
-		return UploadDocumentRes{}, miso.WrapErr(err)
+		return UploadDocumentRes{}, errs.WrapErr(err)
 	}
 	defer file.Close()
 
@@ -224,7 +225,7 @@ func UploadDocument(rail miso.Rail, host string, apiKey string, req UploadDocume
 	}
 	datas, err := json.WriteJson(apiReq)
 	if err != nil {
-		return UploadDocumentRes{}, miso.WrapErr(err)
+		return UploadDocumentRes{}, errs.WrapErr(err)
 	}
 
 	formData := map[string]io.Reader{
@@ -233,13 +234,13 @@ func UploadDocument(rail miso.Rail, host string, apiKey string, req UploadDocume
 	}
 
 	var res UploadDocumentRes
-	err = miso.NewTClient(rail, url).
+	err = miso.NewClient(rail, url).
 		Require2xx().
 		AddAuthBearer(apiKey).
 		PostFormData(formData).
 		Json(&res)
 	if err != nil {
-		return res, miso.WrapErrf(err, "dify.UploadDocument failed, req: %#v, apiReq: %#v", req, apiReq)
+		return res, errs.WrapErrf(err, "dify.UploadDocument failed, req: %#v, apiReq: %#v", req, apiReq)
 	}
 	rail.Infof("Uploaded dify document, %v, %#v", req.FilePath, res)
 	return res, nil
@@ -259,11 +260,11 @@ type RemoveDocumentRes struct {
 func RemoveDocument(rail miso.Rail, host string, apiKey string, req RemoveDocumentReq) error {
 	rail.Infof("Removing dify doc: %#v", req)
 	url := host + fmt.Sprintf("/v1/datasets/%v/documents/%v", req.DatasetId, req.DocumentId)
-	tr := miso.NewTClient(rail, url).
+	tr := miso.NewClient(rail, url).
 		AddAuthBearer(apiKey).
 		Delete()
 	if tr.Err != nil {
-		return miso.WrapErr(tr.Err)
+		return errs.WrapErr(tr.Err)
 	}
 
 	if tr.StatusCode == 200 {
@@ -280,7 +281,7 @@ func RemoveDocument(rail miso.Rail, host string, apiKey string, req RemoveDocume
 		}
 	}
 
-	return miso.NewErrf("unknown error, status code: %v, body: %v", tr.StatusCode, s)
+	return errs.NewErrf("unknown error, status code: %v, body: %v", tr.StatusCode, s)
 }
 
 var (
@@ -343,13 +344,13 @@ func CreateDocument(rail miso.Rail, host string, apiKey string, req CreateDocume
 	}
 
 	var res UploadDocumentRes
-	err := miso.NewTClient(rail, url).
+	err := miso.NewClient(rail, url).
 		Require2xx().
 		AddAuthBearer(apiKey).
 		PostJson(req).
 		Json(&res)
 	if err != nil {
-		return res, miso.WrapErrf(err, "dify.CreateDocument failed, req: %#v, apiReq: %#v", req, apiReq)
+		return res, errs.WrapErrf(err, "dify.CreateDocument failed, req: %#v, apiReq: %#v", req, apiReq)
 	}
 	rail.Infof("Created dify document, %v, %#v", req.Name, res)
 	return res, nil
@@ -380,13 +381,13 @@ type GetDocIndexingStatusReq struct {
 func GetDocIndexingStatus(rail miso.Rail, host string, apiKey string, req GetDocIndexingStatusReq) ([]DocIndexingStatus, error) {
 	url := host + fmt.Sprintf("/v1/datasets/%v/documents/%v/indexing-status", req.DatasetId, req.BatchId)
 	var res GetDocIndexingStatusApiRes
-	err := miso.NewTClient(rail, url).
+	err := miso.NewClient(rail, url).
 		Require2xx().
 		AddAuthBearer(apiKey).
 		Get().
 		Json(&res)
 	if err != nil {
-		return nil, miso.WrapErrf(err, "dify.GetDocIndexingStatus failed, req: %#v", req)
+		return nil, errs.WrapErrf(err, "dify.GetDocIndexingStatus failed, req: %#v", req)
 	}
 	return res.Data, nil
 }
