@@ -3,7 +3,7 @@ module github.com/curtisnewbie/miso-dify
 go 1.24.4
 
 require (
-	github.com/curtisnewbie/miso v0.4.0-beta.6
+	github.com/curtisnewbie/miso v0.4.0
 	github.com/spf13/cast v1.6.0
 	github.com/tmaxmax/go-sse v0.10.0
 )
