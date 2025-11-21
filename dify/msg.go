@@ -41,7 +41,7 @@ func SendMsgFeedback(rail miso.Rail, host string, apiKey string, req MsgFeedback
 		}).
 		Str()
 	if err != nil {
-		return errs.WrapErrf(err, "dify SendMsgFeedback failed")
+		return errs.Wrapf(err, "dify SendMsgFeedback failed")
 	}
 	rail.Infof("Request success, %v", s)
 	return nil

@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/curtisnewbie/miso/encoding/json"
 	"github.com/curtisnewbie/miso/miso"
-	"github.com/curtisnewbie/miso/util"
+	"github.com/curtisnewbie/miso/util/atom"
 	"github.com/curtisnewbie/miso/util/errs"
+	"github.com/curtisnewbie/miso/util/json"
 	"github.com/curtisnewbie/miso/util/strutil"
 	"github.com/spf13/cast"
 	"github.com/tmaxmax/go-sse"
@@ -169,7 +169,7 @@ func ApiStreamQueryChatBot(rail miso.Rail, newClient func() *miso.TClient, apiKe
 			}
 			var cme ChatMessageEvent
 			if err := json.SParseJson(e.Data, &cme); err != nil {
-				return true, errs.WrapErrf(err, "parse streaming event failed, %v", e.Data)
+				return true, errs.Wrapf(err, "parse streaming event failed, %v", e.Data)
 			}
 
 			if strutil.EqualAnyStr(cme.Event, EventTypeAgentThrought, EventTypeAgentMessage, EventTypeMessage, EventTypeError) {
@@ -209,7 +209,7 @@ func ApiStreamQueryChatBot(rail miso.Rail, newClient func() *miso.TClient, apiKe
 		}, func(c *miso.SseReadConfig) { c.MaxEventSize = 512 * 1024 })
 
 	if err != nil {
-		return ChatMessageRes{}, errs.WrapErrf(err, "ApiStreamQueryChatBot failed")
+		return ChatMessageRes{}, errs.Wrapf(err, "ApiStreamQueryChatBot failed")
 	}
 
 	rail.Debugf("ApiStreamQueryChatBot, %#v", res)
@@ -250,13 +250,13 @@ type GetConversationVarRes struct {
 	Data    []GetConversationVarData `json:"data"`
 }
 type GetConversationVarData struct {
-	Id          string     `json:"id"`
-	Name        string     `json:"name"`
-	ValueType   string     `json:"value_type"`
-	Value       string     `json:"value"`
-	Description string     `json:"description"`
-	CreatedAt   util.ETime `json:"created_at"`
-	UpdatedAt   util.ETime `json:"updated_at"`
+	Id          string    `json:"id"`
+	Name        string    `json:"name"`
+	ValueType   string    `json:"value_type"`
+	Value       string    `json:"value"`
+	Description string    `json:"description"`
+	CreatedAt   atom.Time `json:"created_at"`
+	UpdatedAt   atom.Time `json:"updated_at"`
 }
 
 type GetConversationVarReq struct {

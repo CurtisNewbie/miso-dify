@@ -7,10 +7,11 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/curtisnewbie/miso/encoding/json"
 	"github.com/curtisnewbie/miso/miso"
-	"github.com/curtisnewbie/miso/util"
+	"github.com/curtisnewbie/miso/util/atom"
 	"github.com/curtisnewbie/miso/util/errs"
+	"github.com/curtisnewbie/miso/util/json"
+	"github.com/curtisnewbie/miso/util/osutil"
 )
 
 var (
@@ -23,10 +24,10 @@ type GetDocumentRes struct {
 	Size        int
 	Extension   string
 	Url         string
-	DownloadUrl string     `json:"download_url"`
-	MimeType    string     `json:"mime_type"`
-	CreatedBy   string     `json:"created_by"`
-	CreatedAt   util.ETime `json:"created_at"`
+	DownloadUrl string    `json:"download_url"`
+	MimeType    string    `json:"mime_type"`
+	CreatedBy   string    `json:"created_by"`
+	CreatedAt   atom.Time `json:"created_at"`
 }
 
 type GetDocumentReq struct {
@@ -46,7 +47,7 @@ func GetDocument(rail miso.Rail, host string, apiKey string, req GetDocumentReq)
 
 	err := tr.Json(&res)
 	if err != nil {
-		return res, errs.WrapErrf(err, "dify.GetDocument failed")
+		return res, errs.Wrapf(err, "dify.GetDocument failed")
 	}
 	return res, err
 }
@@ -142,7 +143,7 @@ func AddDocumentSegment(rail miso.Rail, host string, apiKey string, req AddDocum
 		PostJson(addDocumentSegmentApiReq{Segments: req.Segments}).
 		Json(&res)
 	if err != nil {
-		return nil, errs.WrapErrf(err, "dify.AddDocumentSegment failed, req: %#v", req)
+		return nil, errs.Wrapf(err, "dify.AddDocumentSegment failed, req: %#v", req)
 	}
 	rail.Infof("Added dify document segment, %#v", res)
 	return res.Data, nil
@@ -180,7 +181,7 @@ func AddDocumentChildSegment(rail miso.Rail, host string, apiKey string, req Add
 		PostJson(addDocumentChildSegmentApiReq{Content: req.Content}).
 		Json(&res)
 	if err != nil {
-		return AddDocumentChildSegmentRes{}, errs.WrapErrf(err, "dify.AddDocumentChildSegment failed, req: %#v", req)
+		return AddDocumentChildSegmentRes{}, errs.Wrapf(err, "dify.AddDocumentChildSegment failed, req: %#v", req)
 	}
 	rail.Infof("Added dify document child segment, %#v", res)
 	return res.Data, nil
@@ -195,9 +196,9 @@ func UploadDocument(rail miso.Rail, host string, apiKey string, req UploadDocume
 	req.Filename = fixFilename(req.Filename)
 	url := host + fmt.Sprintf("/v1/datasets/%v/document/create-by-file", req.DatasetId)
 
-	file, err := util.OpenRFile(req.FilePath)
+	file, err := osutil.OpenRFile(req.FilePath)
 	if err != nil {
-		return UploadDocumentRes{}, errs.WrapErr(err)
+		return UploadDocumentRes{}, errs.Wrap(err)
 	}
 	defer file.Close()
 
@@ -225,7 +226,7 @@ func UploadDocument(rail miso.Rail, host string, apiKey string, req UploadDocume
 	}
 	datas, err := json.WriteJson(apiReq)
 	if err != nil {
-		return UploadDocumentRes{}, errs.WrapErr(err)
+		return UploadDocumentRes{}, errs.Wrap(err)
 	}
 
 	formData := map[string]io.Reader{
@@ -240,7 +241,7 @@ func UploadDocument(rail miso.Rail, host string, apiKey string, req UploadDocume
 		PostFormData(formData).
 		Json(&res)
 	if err != nil {
-		return res, errs.WrapErrf(err, "dify.UploadDocument failed, req: %#v, apiReq: %#v", req, apiReq)
+		return res, errs.Wrapf(err, "dify.UploadDocument failed, req: %#v, apiReq: %#v", req, apiReq)
 	}
 	rail.Infof("Uploaded dify document, %v, %#v", req.FilePath, res)
 	return res, nil
@@ -264,7 +265,7 @@ func RemoveDocument(rail miso.Rail, host string, apiKey string, req RemoveDocume
 		AddAuthBearer(apiKey).
 		Delete()
 	if tr.Err != nil {
-		return errs.WrapErr(tr.Err)
+		return errs.Wrap(tr.Err)
 	}
 
 	if tr.StatusCode == 200 {
@@ -350,24 +351,24 @@ func CreateDocument(rail miso.Rail, host string, apiKey string, req CreateDocume
 		PostJson(req).
 		Json(&res)
 	if err != nil {
-		return res, errs.WrapErrf(err, "dify.CreateDocument failed, req: %#v, apiReq: %#v", req, apiReq)
+		return res, errs.Wrapf(err, "dify.CreateDocument failed, req: %#v, apiReq: %#v", req, apiReq)
 	}
 	rail.Infof("Created dify document, %v, %#v", req.Name, res)
 	return res, nil
 }
 
 type DocIndexingStatus struct {
-	Id                   string      `json:"id"`
-	IndexingStatus       string      `json:"indexing_status"`
-	ProcessingStartedAt  *util.ETime `json:"processing_started_at"`
-	ParsingCompletedAt   *util.ETime `json:"parsing_completed_at"`
-	CleaningCompletedAt  *util.ETime `json:"cleaning_completed_at"`
-	SplittingCompletedAt *util.ETime `json:"splitting_completed_at"`
-	CompletedAt          *util.ETime `json:"completed_at"`
-	PausedAt             *util.ETime `json:"paused_at"`
-	StoppedAt            *util.ETime `json:"stopped_at"`
-	CompletedSegments    int         `json:"completed_segments"`
-	TotalSegments        int         `json:"total_segments"`
+	Id                   string     `json:"id"`
+	IndexingStatus       string     `json:"indexing_status"`
+	ProcessingStartedAt  *atom.Time `json:"processing_started_at"`
+	ParsingCompletedAt   *atom.Time `json:"parsing_completed_at"`
+	CleaningCompletedAt  *atom.Time `json:"cleaning_completed_at"`
+	SplittingCompletedAt *atom.Time `json:"splitting_completed_at"`
+	CompletedAt          *atom.Time `json:"completed_at"`
+	PausedAt             *atom.Time `json:"paused_at"`
+	StoppedAt            *atom.Time `json:"stopped_at"`
+	CompletedSegments    int        `json:"completed_segments"`
+	TotalSegments        int        `json:"total_segments"`
 }
 
 type GetDocIndexingStatusApiRes struct {
@@ -387,7 +388,7 @@ func GetDocIndexingStatus(rail miso.Rail, host string, apiKey string, req GetDoc
 		Get().
 		Json(&res)
 	if err != nil {
-		return nil, errs.WrapErrf(err, "dify.GetDocIndexingStatus failed, req: %#v", req)
+		return nil, errs.Wrapf(err, "dify.GetDocIndexingStatus failed, req: %#v", req)
 	}
 	return res.Data, nil
 }
