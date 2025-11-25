@@ -19,11 +19,11 @@ var (
 )
 
 type GetDocumentRes struct {
-	Id          string
-	Name        string
-	Size        int
-	Extension   string
-	Url         string
+	Id          string    `json:"id"`
+	Name        string    `json:"name"`
+	Size        int       `json:"size"`
+	Extension   string    `json:"extension"`
+	Url         string    `json:"url"`
 	DownloadUrl string    `json:"download_url"`
 	MimeType    string    `json:"mime_type"`
 	CreatedBy   string    `json:"created_by"`
@@ -81,14 +81,14 @@ type SubchunkSegmentationParam struct {
 }
 
 type UploadDocumentReq struct {
-	DatasetId          string `valid:"notEmpty"`
-	OriginalDocumentId string `valid:"trim"`
-	IndexingTechnique  string // high_quality, economy
-	DocForm            string // text_model, hierarchical_model, qa_model
-	DocType            string // deprecated
-	ProcessRule        ProcessRule
-	FilePath           string `valid:"notEmpty"`
-	Filename           string `valid:"notEmpty"`
+	DatasetId          string      `valid:"notEmpty" json:"datasetId"`
+	OriginalDocumentId string      `valid:"trim" json:"originalDocumentId"`
+	IndexingTechnique  string      `json:"indexingTechnique"` // high_quality, economy
+	DocForm            string      `json:"docForm"`           // text_model, hierarchical_model, qa_model
+	DocType            string      `json:"docType"`           // deprecated
+	ProcessRule        ProcessRule `json:"processRule"`
+	FilePath           string      `valid:"notEmpty" json:"filePath"`
+	Filename           string      `valid:"notEmpty" json:"filename"`
 }
 
 type UploadDocumentApiReq struct {
@@ -100,9 +100,9 @@ type UploadDocumentApiReq struct {
 }
 
 type DifyDocument struct {
-	Id        string
-	Tokens    int
-	WordCount int `json:"word_count"`
+	Id        string `json:"id"`
+	Tokens    int    `json:"tokens"`
+	WordCount int    `json:"word_count"`
 }
 
 type DocSegment struct {
@@ -118,15 +118,15 @@ type AddDocumentSegmentReq struct {
 }
 
 type AddDocumentSegmentRes struct {
-	Id       string
-	Position int
-	Content  string
+	Id       string `json:"id"`
+	Position int    `json:"position"`
+	Content  string `json:"content"`
 
 	// more fields to be added
 }
 
 type addDocumentSegmentApiRes struct {
-	Data []AddDocumentSegmentRes
+	Data []AddDocumentSegmentRes `json:"data"`
 }
 
 type addDocumentSegmentApiReq struct {
@@ -150,17 +150,17 @@ func AddDocumentSegment(rail miso.Rail, host string, apiKey string, req AddDocum
 }
 
 type AddDocumentChildSegmentRes struct {
-	Id      string
-	Content string
+	Id      string `json:"id"`
+	Content string `json:"content"`
 
 	// more fields to be added
 }
 
 type AddDocumentChildSegmentReq struct {
-	DatasetId  string `valid:"notEmpty"`
-	DocumentId string `valid:"trim"`
-	SegmentId  string
-	Content    string
+	DatasetId  string `valid:"notEmpty" json:"datasetId"`
+	DocumentId string `valid:"trim" json:"documentId"`
+	SegmentId  string `json:"segmentId"`
+	Content    string `json:"content"`
 }
 
 type addDocumentChildSegmentApiReq struct {
@@ -168,7 +168,7 @@ type addDocumentChildSegmentApiReq struct {
 }
 
 type addDocumentChildSegmentApiRes struct {
-	Data AddDocumentChildSegmentRes
+	Data AddDocumentChildSegmentRes `json:"data"`
 }
 
 func AddDocumentChildSegment(rail miso.Rail, host string, apiKey string, req AddDocumentChildSegmentReq) (AddDocumentChildSegmentRes, error) {
@@ -188,8 +188,8 @@ func AddDocumentChildSegment(rail miso.Rail, host string, apiKey string, req Add
 }
 
 type UploadDocumentRes struct {
-	Document DifyDocument
-	Batch    string
+	Document DifyDocument `json:"document"`
+	Batch    string       `json:"batch"`
 }
 
 func UploadDocument(rail miso.Rail, host string, apiKey string, req UploadDocumentReq) (UploadDocumentRes, error) {
@@ -248,14 +248,14 @@ func UploadDocument(rail miso.Rail, host string, apiKey string, req UploadDocume
 }
 
 type RemoveDocumentReq struct {
-	DatasetId  string
-	DocumentId string
+	DatasetId  string `json:"datasetId"`
+	DocumentId string `json:"documentId"`
 }
 
 type RemoveDocumentRes struct {
-	Code    string
-	Message string
-	Status  int
+	Code    string `json:"code"`
+	Message string `json:"message"`
+	Status  int    `json:"status"`
 }
 
 func RemoveDocument(rail miso.Rail, host string, apiKey string, req RemoveDocumentReq) error {
@@ -300,13 +300,13 @@ func fixFilename(s string) string {
 }
 
 type CreateDocumentReq struct {
-	DatasetId         string `valid:"notEmpty"`
-	Name              string
-	Text              string
-	IndexingTechnique string
-	DocForm           string
-	DocType           string
-	ProcessRule       ProcessRule
+	DatasetId         string      `valid:"notEmpty" json:"datasetId"`
+	Name              string      `json:"name"`
+	Text              string      `json:"text"`
+	IndexingTechnique string      `json:"indexingTechnique"`
+	DocForm           string      `json:"docForm"`
+	DocType           string      `json:"docType"`
+	ProcessRule       ProcessRule `json:"processRule"`
 }
 
 type CreateDocumentApiReq struct {
@@ -375,8 +375,8 @@ type GetDocIndexingStatusApiRes struct {
 	Data []DocIndexingStatus `json:"data"`
 }
 type GetDocIndexingStatusReq struct {
-	DatasetId string
-	BatchId   string
+	DatasetId string `json:"datasetId"`
+	BatchId   string `json:"batchId"`
 }
 
 func GetDocIndexingStatus(rail miso.Rail, host string, apiKey string, req GetDocIndexingStatusReq) ([]DocIndexingStatus, error) {

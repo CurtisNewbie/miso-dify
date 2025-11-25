@@ -14,15 +14,15 @@ const (
 
 type MsgFeedbackReq struct {
 	MessageId string `json:"-"`
-	Rating    string
-	User      string
-	Content   string
+	Rating    string `json:"rating"`
+	User      string `json:"user"`
+	Content   string `json:"content"`
 }
 
 type apiMsgFeedbackReq struct {
-	Rating  *string
-	User    string
-	Content string
+	Rating  *string `json:"rating"`
+	User    string  `json:"user"`
+	Content string  `json:"content"`
 }
 
 func SendMsgFeedback(rail miso.Rail, host string, apiKey string, req MsgFeedbackReq) error {
