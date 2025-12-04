@@ -133,6 +133,14 @@ func ApiStreamQueryChatBot(rail miso.Rail, newClient func() *miso.TClient, apiKe
 			cr.Files[i] = f
 		}
 		cr.ResponseMode = "streaming"
+
+		if cr.User == "" {
+			if appName := miso.GetPropStr(miso.PropAppName); appName != "" {
+				cr.User = appName
+			} else {
+				cr.User = "miso-dify-client"
+			}
+		}
 		req = cr
 	}
 
