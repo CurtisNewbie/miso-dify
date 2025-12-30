@@ -17,12 +17,16 @@ const (
 	SearchMethodFullText = "full_text_search"
 
 	WeightTypeCustomized = "customized"
+
+	RerankModeWeightedScore = "weighted_score"
+	RerankModeReranker      = "reranking_model"
 )
 
 type RetrievalModel struct {
 	SearchMethod          string          `json:"search_method"`
 	RerankingEnable       bool            `json:"reranking_enable"`
 	RerankingModel        *RerankingModel `json:"reranking_model,omitempty"`
+	RerankingMode         string          `json:"reranking_mode"`
 	TopK                  int             `json:"top_k"`
 	ScoreThresholdEnabled bool            `json:"score_threshold_enabled"`
 	ScoreThreshold        float64         `json:"score_threshold,omitempty"`
