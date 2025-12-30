@@ -403,11 +403,13 @@ type DocMetadata struct {
 	Value string `json:"value"`
 }
 
+type OperationData struct {
+	DocumentID   string        `json:"document_id"`
+	MetadataList []DocMetadata `json:"metadata_list"`
+}
+
 type UpdateDocMetadataReq struct {
-	OperationData []struct {
-		DocumentID   string        `json:"document_id"`
-		MetadataList []DocMetadata `json:"metadata_list"`
-	} `json:"operation_data"`
+	OperationData []OperationData `json:"operation_data"`
 }
 
 func UpdateDocMetadata(rail miso.Rail, host string, apiKey string, datasetId string, req UpdateDocMetadataReq) error {
