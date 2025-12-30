@@ -75,6 +75,10 @@ func (a *Api) SendMsgFeedback(rail miso.Rail, req MsgFeedbackReq) error {
 	return SendMsgFeedback(rail, a.host(), a.apiKey(), req)
 }
 
-func (a *Api) UpdateDocMetadata(rail miso.Rail, host string, apiKey string, datasetId string, req UpdateDocMetadataReq) error {
+func (a *Api) UpdateDocMetadata(rail miso.Rail, datasetId string, req UpdateDocMetadataReq) error {
 	return UpdateDocMetadata(rail, a.host(), a.apiKey(), datasetId, req)
+}
+
+func (a *Api) ListDatasetMetadata(rail miso.Rail, datasetId string) (ListedDatasetMetadata, error) {
+	return ListDatasetMetadata(rail, a.host(), a.apiKey(), datasetId)
 }

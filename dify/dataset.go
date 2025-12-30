@@ -1,6 +1,8 @@
 package dify
 
 import (
+	"fmt"
+
 	"github.com/curtisnewbie/miso/miso"
 )
 
@@ -109,4 +111,27 @@ func CreateDataset(rail miso.Rail, host string, apiKey string, r CreateDatasetRe
 		PostJson(r).
 		Json(&res)
 	return res, err
+}
+
+type ListedDatasetMetadata struct {
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	Type     string `json:"type"`
+	UseCount int64  `json:"use_count"`
+}
+
+type ListDatasetMetadataRes struct {
+	BuiltInFieldEnabled bool                    `json:"built_in_field_enabled"`
+	DocMetadata         []ListedDatasetMetadata `json:"doc_metadata"`
+}
+
+func ListDatasetMetadata(rail miso.Rail, host string, apiKey string, datasetId string) (ListedDatasetMetadata, error) {
+	url := host + fmt.Sprintf("/v1/datasets/%v/metadata", datasetId)
+	var l ListedDatasetMetadata
+	err := miso.NewClient(rail, url).
+		AddAuthBearer(apiKey).
+		Require2xx().
+		Get().
+		Json(&l)
+	return l, err
 }
