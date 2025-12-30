@@ -74,3 +74,7 @@ func (a *Api) UploadFile(rail miso.Rail, user string, file *os.File, filename st
 func (a *Api) SendMsgFeedback(rail miso.Rail, req MsgFeedbackReq) error {
 	return SendMsgFeedback(rail, a.host(), a.apiKey(), req)
 }
+
+func (a *Api) UpdateDocMetadata(rail miso.Rail, host string, apiKey string, datasetId string, req UpdateDocMetadataReq) error {
+	return UpdateDocMetadata(rail, a.host(), a.apiKey(), datasetId, req)
+}

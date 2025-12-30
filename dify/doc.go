@@ -396,3 +396,26 @@ func GetDocIndexingStatus(rail miso.Rail, host string, apiKey string, req GetDoc
 	}
 	return res.Data, nil
 }
+
+type DocMetadata struct {
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
+
+type UpdateDocMetadataReq struct {
+	OperationData []struct {
+		DocumentID   string        `json:"document_id"`
+		MetadataList []DocMetadata `json:"metadata_list"`
+	} `json:"operation_data"`
+}
+
+func UpdateDocMetadata(rail miso.Rail, host string, apiKey string, datasetId string, req UpdateDocMetadataReq) error {
+	url := host + fmt.Sprintf("/v1/datasets/%v/documents/metadata", datasetId)
+	err := miso.NewClient(rail, url).
+		AddAuthBearer(apiKey).
+		Require2xx().
+		PostJson(req).
+		Ok()
+	return err
+}
