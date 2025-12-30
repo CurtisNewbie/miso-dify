@@ -296,6 +296,10 @@ func fixFilename(s string) string {
 	s, _ = strings.CutPrefix(s, "\"")
 	s, _ = strings.CutSuffix(s, "'")
 	s, _ = strings.CutSuffix(s, "\"")
+
+	if _, _, ok := osutil.FileCutDotSuffix(s); !ok {
+		s += ".txt"
+	}
 	return s
 }
 
