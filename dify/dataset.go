@@ -15,6 +15,8 @@ const (
 	SearchMethodHybrid   = "hybrid_search"
 	SearchMethodSemantic = "semantic_search"
 	SearchMethodFullText = "full_text_search"
+
+	WeightTypeCustomized = "customized"
 )
 
 type RetrievalModel struct {
@@ -37,6 +39,23 @@ type WeightKeywordSetting struct {
 	KeywordWeight float64 `json:"keyword_weight"`
 }
 
+/*
+Weight model.
+
+E.g.,
+
+	"weights": {
+			"weight_type": "customized",
+			"keyword_setting": {
+				"keyword_weight": 0.4
+			},
+			"vector_setting": {
+				"vector_weight": 0.6,
+				"embedding_model_name": "text-embedding-v3",
+				"embedding_provider_name": "langgenius/openai_api_compatible/openai_api_compatible"
+			}
+		}
+*/
 type WeightModel struct {
 	WeightType     *string               `json:"weight_type,omitempty"`
 	VectorSetting  *WeightVectorSetting  `json:"vector_setting,omitempty"`
