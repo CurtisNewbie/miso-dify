@@ -125,9 +125,9 @@ type ListDatasetMetadataRes struct {
 	DocMetadata         []ListedDatasetMetadata `json:"doc_metadata"`
 }
 
-func ListDatasetMetadata(rail miso.Rail, host string, apiKey string, datasetId string) (ListedDatasetMetadata, error) {
+func ListDatasetMetadata(rail miso.Rail, host string, apiKey string, datasetId string) (ListDatasetMetadataRes, error) {
 	url := host + fmt.Sprintf("/v1/datasets/%v/metadata", datasetId)
-	var l ListedDatasetMetadata
+	var l ListDatasetMetadataRes
 	err := miso.NewClient(rail, url).
 		AddAuthBearer(apiKey).
 		Require2xx().
