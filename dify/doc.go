@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"io"
 	"regexp"
-	"strings"
 
 	"github.com/curtisnewbie/miso/miso"
 	"github.com/curtisnewbie/miso/util/atom"
 	"github.com/curtisnewbie/miso/util/errs"
 	"github.com/curtisnewbie/miso/util/json"
 	"github.com/curtisnewbie/miso/util/osutil"
+	"github.com/curtisnewbie/miso/util/strutil"
 )
 
 var (
@@ -286,17 +286,12 @@ func RemoveDocument(rail miso.Rail, host string, apiKey string, req RemoveDocume
 }
 
 var (
-	fixnameRe = regexp.MustCompile(`[/_\\ ]+`)
+	fixnameRe = regexp.MustCompile(`[/_\\ ?!]+`)
 )
 
 func fixFilename(s string) string {
 	s = fixnameRe.ReplaceAllString(s, "_")
-	s = strings.TrimSpace(s)
-	s, _ = strings.CutPrefix(s, "'")
-	s, _ = strings.CutPrefix(s, "\"")
-	s, _ = strings.CutSuffix(s, "'")
-	s, _ = strings.CutSuffix(s, "\"")
-
+	s = strutil.TrimSpace(s, '_', '\'', '"')
 	if _, _, ok := osutil.FileCutDotSuffix(s); !ok {
 		s += ".txt"
 	}
