@@ -79,6 +79,6 @@ func (a *Api) UpdateDocMetadata(rail miso.Rail, datasetId string, req UpdateDocM
 	return UpdateDocMetadata(rail, a.host(), a.apiKey(), datasetId, req)
 }
 
-func (a *Api) ListDatasetMetadata(rail miso.Rail, datasetId string) (ListedDatasetMetadata, error) {
+func (a *Api) ListDatasetMetadata(rail miso.Rail, datasetId string) (ListDatasetMetadataRes, error) {
 	return ListDatasetMetadata(rail, a.host(), a.apiKey(), datasetId)
 }
