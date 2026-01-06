@@ -76,6 +76,8 @@ github.com/cncf/udpa/go v0.0.0-20201120205902-5459f2c99403/go.mod h1:WmhPx2Nbnht
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/curtisnewbie/miso v0.4.8 h1:KEvbu4SghX/S+KMMklC9ZK+eBwXxLyqxR/zLD7V3Zqk=
 github.com/curtisnewbie/miso v0.4.8/go.mod h1:rH1uHU6NP+SGkg488ztrZAK/kRtQTOO6gX935Q9NWIA=
+github.com/curtisnewbie/miso v0.4.9-beta.3 h1:Q7FC2bN2iBd23TOQlZ9bFAmfrPjmwBsAS6uueHlQE0c=
+github.com/curtisnewbie/miso v0.4.9-beta.3/go.mod h1:rH1uHU6NP+SGkg488ztrZAK/kRtQTOO6gX935Q9NWIA=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
