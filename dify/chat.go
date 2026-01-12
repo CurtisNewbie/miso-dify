@@ -182,18 +182,14 @@ func ApiStreamQueryChatBot(rail miso.Rail, newClient func() *miso.TClient, apiKe
 			if rail.IsDone() {
 				return true, errs.NewErrf("context is closed")
 			}
-
-			if onSse != nil {
-				if err := onSse(SseEvent(e)); err != nil {
-					return true, err
-				}
-			}
-			if e.Data == "" {
-				return false, nil
-			}
 			if miso.IsShuttingDown() {
 				return true, miso.ErrServerShuttingDown.New()
 			}
+
+			if e.Data == "" {
+				return false, nil
+			}
+
 			var cme ChatMessageEvent
 			if err := json.SParseJson(e.Data, &cme); err != nil {
 				return true, errs.Wrapf(err, "parse streaming event failed, %v", e.Data)
@@ -205,6 +201,12 @@ func ApiStreamQueryChatBot(rail miso.Rail, newClient func() *miso.TClient, apiKe
 					return false, nil
 				}
 				cme = c
+			}
+
+			if onSse != nil {
+				if err := onSse(SseEvent(e)); err != nil {
+					return true, err
+				}
 			}
 
 			if strutil.EqualAnyStr(cme.Event, EventTypeAgentThrought, EventTypeAgentMessage, EventTypeMessage, EventTypeError) {
@@ -309,16 +311,16 @@ func GetConversationVar(rail miso.Rail, host string, apiKey string, req GetConve
 	c := miso.NewClient(rail, url).
 		Require2xx().
 		AddAuthBearer(apiKey).
-		AddQueryParams("user", req.User)
+		AddQuery("user", req.User)
 
 	if req.LastId != nil {
-		c = c.AddQueryParams("last_id", *req.LastId)
+		c = c.AddQuery("last_id", *req.LastId)
 	}
 	if req.Limit != nil {
-		c = c.AddQueryParams("limit", cast.ToString(*req.Limit))
+		c = c.AddQuery("limit", cast.ToString(*req.Limit))
 	}
 	if req.VariableName != nil {
-		c = c.AddQueryParams("variable_name", cast.ToString(*req.VariableName))
+		c = c.AddQuery("variable_name", cast.ToString(*req.VariableName))
 	}
 	return res, c.Get().Json(&res)
 }
