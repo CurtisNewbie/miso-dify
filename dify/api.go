@@ -17,7 +17,8 @@ type Api struct {
 	apiKey func() string
 }
 
-func SetupDefault(host func() string, apiKey func() string) {
+// Setup default Api.
+func SetupApi(host func() string, apiKey func() string) {
 	defaultApi = NewApi(host, apiKey)
 }
 
@@ -98,6 +99,9 @@ func (a Api) ListDatasetMetadata(rail miso.Rail, datasetId string) (ListDatasetM
 	return ListDatasetMetadata(rail, a.host(), a.apiKey(), datasetId)
 }
 
-func Default() Api {
+// Get default Api.
+//
+// You must [SetupApi] before using it.
+func Get() Api {
 	return defaultApi
 }
