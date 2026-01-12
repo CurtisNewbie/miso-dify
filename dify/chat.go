@@ -201,6 +201,11 @@ func ApiStreamQueryChatBot(rail miso.Rail, newClient func() *miso.TClient, apiKe
 					return false, nil
 				}
 				cme = c
+				e = sse.Event{
+					LastEventID: e.LastEventID,
+					Type:        e.Type,
+					Data:        json.TrySWriteJson(cme),
+				}
 			}
 
 			if onSse != nil {
