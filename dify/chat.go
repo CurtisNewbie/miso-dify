@@ -57,8 +57,14 @@ type ChatMessageReq struct {
 }
 
 type ChatMessageHooks struct {
-	OnAnswerChanged func(answer string)    `json:"-"`
-	OnSseEvent      func(e SseEvent) error `json:"-"`
+	// Triggered when answer updated.
+	OnAnswerChanged func(answer string) `json:"-"`
+
+	// Trigger when SseEvent received.
+	OnSseEvent func(e SseEvent) error `json:"-"`
+
+	// Callback to rewrite ChatMessageEvent.
+	ChatMessageEventRewrite func(ChatMessageEvent) ChatMessageEvent `json:"-"`
 }
 
 func (c ChatMessageHooks) getOnAnswerChanged() func(answer string) {
@@ -67,6 +73,14 @@ func (c ChatMessageHooks) getOnAnswerChanged() func(answer string) {
 
 func (c ChatMessageHooks) getOnSseEvent() func(e SseEvent) error {
 	return c.OnSseEvent
+}
+
+func (c ChatMessageHooks) getChatMessageEventRewrite() func(ChatMessageEvent) ChatMessageEvent {
+	return c.ChatMessageEventRewrite
+}
+
+type withChatMessageEventRewrite interface {
+	getChatMessageEventRewrite() func(ChatMessageEvent) ChatMessageEvent
 }
 
 type withOnAnswerChanged interface {
@@ -154,6 +168,11 @@ func ApiStreamQueryChatBot(rail miso.Rail, newClient func() *miso.TClient, apiKe
 		onAnswerChanged = n.getOnAnswerChanged()
 	}
 
+	var chatMessageEventRewrite func(ChatMessageEvent) ChatMessageEvent = nil
+	if n, ok := req.(withChatMessageEventRewrite); ok {
+		chatMessageEventRewrite = n.getChatMessageEventRewrite()
+	}
+
 	var res ChatMessageRes
 	err := newClient().
 		Require2xx().
@@ -180,6 +199,10 @@ func ApiStreamQueryChatBot(rail miso.Rail, newClient func() *miso.TClient, apiKe
 				return true, errs.Wrapf(err, "parse streaming event failed, %v", e.Data)
 			}
 
+			if chatMessageEventRewrite != nil {
+				cme = chatMessageEventRewrite(cme)
+			}
+
 			if strutil.EqualAnyStr(cme.Event, EventTypeAgentThrought, EventTypeAgentMessage, EventTypeMessage, EventTypeError) {
 				if cme.ConversationId != "" {
 					res.ConversationId = cme.ConversationId
@@ -188,6 +211,7 @@ func ApiStreamQueryChatBot(rail miso.Rail, newClient func() *miso.TClient, apiKe
 					res.MessageId = cme.MessageId
 				}
 			}
+
 			switch cme.Event {
 			case EventTypeAgentThrought:
 				res.Thought += cme.Answer
