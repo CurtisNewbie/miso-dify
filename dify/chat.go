@@ -64,7 +64,7 @@ type ChatMessageHooks struct {
 	OnSseEvent func(e SseEvent) error `json:"-"`
 
 	// Callback to rewrite ChatMessageEvent.
-	ChatMessageEventRewrite func(ChatMessageEvent) ChatMessageEvent `json:"-"`
+	ChatMessageEventRewrite func(ChatMessageEvent) (c ChatMessageEvent, skip bool) `json:"-"`
 }
 
 func (c ChatMessageHooks) getOnAnswerChanged() func(answer string) {
@@ -75,12 +75,12 @@ func (c ChatMessageHooks) getOnSseEvent() func(e SseEvent) error {
 	return c.OnSseEvent
 }
 
-func (c ChatMessageHooks) getChatMessageEventRewrite() func(ChatMessageEvent) ChatMessageEvent {
+func (c ChatMessageHooks) getChatMessageEventRewrite() func(ChatMessageEvent) (ChatMessageEvent, bool) {
 	return c.ChatMessageEventRewrite
 }
 
 type withChatMessageEventRewrite interface {
-	getChatMessageEventRewrite() func(ChatMessageEvent) ChatMessageEvent
+	getChatMessageEventRewrite() func(ChatMessageEvent) (ChatMessageEvent, bool)
 }
 
 type withOnAnswerChanged interface {
@@ -168,7 +168,7 @@ func ApiStreamQueryChatBot(rail miso.Rail, newClient func() *miso.TClient, apiKe
 		onAnswerChanged = n.getOnAnswerChanged()
 	}
 
-	var chatMessageEventRewrite func(ChatMessageEvent) ChatMessageEvent = nil
+	var chatMessageEventRewrite func(ChatMessageEvent) (ChatMessageEvent, bool) = nil
 	if n, ok := req.(withChatMessageEventRewrite); ok {
 		chatMessageEventRewrite = n.getChatMessageEventRewrite()
 	}
@@ -200,7 +200,11 @@ func ApiStreamQueryChatBot(rail miso.Rail, newClient func() *miso.TClient, apiKe
 			}
 
 			if chatMessageEventRewrite != nil {
-				cme = chatMessageEventRewrite(cme)
+				c, skip := chatMessageEventRewrite(cme)
+				if skip {
+					return false, nil
+				}
+				cme = c
 			}
 
 			if strutil.EqualAnyStr(cme.Event, EventTypeAgentThrought, EventTypeAgentMessage, EventTypeMessage, EventTypeError) {
