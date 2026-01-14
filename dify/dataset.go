@@ -197,38 +197,42 @@ type RetrieveRes struct {
 	Query struct {
 		Content string `json:"content"`
 	} `json:"query"`
-	Records []struct {
-		Score   int64 `json:"score"`
-		Segment struct {
-			Answer      string    `json:"answer"`
-			CompletedAt int64     `json:"completed_at"`
-			Content     string    `json:"content"`
-			CreatedAt   int64     `json:"created_at"`
-			CreatedBy   string    `json:"created_by"`
-			DisabledAt  atom.Time `json:"disabled_at"`
-			DisabledBy  string    `json:"disabled_by"`
-			Document    struct {
-				DataSourceType string `json:"data_source_type"`
-				ID             string `json:"id"`
-				Name           string `json:"name"`
-			} `json:"document"`
-			DocumentID    string    `json:"document_id"`
-			Enabled       bool      `json:"enabled"`
-			Error         string    `json:"error"`
-			HitCount      int64     `json:"hit_count"`
-			ID            string    `json:"id"`
-			IndexNodeHash string    `json:"index_node_hash"`
-			IndexNodeID   string    `json:"index_node_id"`
-			IndexingAt    int64     `json:"indexing_at"`
-			Keywords      []string  `json:"keywords"`
-			Position      int64     `json:"position"`
-			Status        string    `json:"status"`
-			StoppedAt     atom.Time `json:"stopped_at"`
-			Tokens        int64     `json:"tokens"`
-			WordCount     int64     `json:"word_count"`
-		} `json:"segment"`
-		TsnePosition interface{} `json:"tsne_position"`
-	} `json:"records"`
+	Records []RetrievedRecord `json:"records"`
+}
+
+type RetrievedRecord struct {
+	Score        int64            `json:"score"`
+	Segment      RetrievedSegment `json:"segment"`
+	TsnePosition interface{}      `json:"tsne_position"`
+}
+
+type RetrievedSegment struct {
+	Answer      string     `json:"answer"`
+	CompletedAt int64      `json:"completed_at"`
+	Content     string     `json:"content"`
+	CreatedAt   int64      `json:"created_at"`
+	CreatedBy   string     `json:"created_by"`
+	DisabledAt  *atom.Time `json:"disabled_at"`
+	DisabledBy  string     `json:"disabled_by"`
+	Document    struct {
+		DataSourceType string `json:"data_source_type"`
+		ID             string `json:"id"`
+		Name           string `json:"name"`
+	} `json:"document"`
+	DocumentID    string     `json:"document_id"`
+	Enabled       bool       `json:"enabled"`
+	Error         string     `json:"error"`
+	HitCount      int64      `json:"hit_count"`
+	ID            string     `json:"id"`
+	IndexNodeHash string     `json:"index_node_hash"`
+	IndexNodeID   string     `json:"index_node_id"`
+	IndexingAt    int64      `json:"indexing_at"`
+	Keywords      []string   `json:"keywords"`
+	Position      int64      `json:"position"`
+	Status        string     `json:"status"`
+	StoppedAt     *atom.Time `json:"stopped_at"`
+	Tokens        int64      `json:"tokens"`
+	WordCount     int64      `json:"word_count"`
 }
 
 func Retrieve(rail miso.Rail, host string, apiKey string, datasetId string, req RetrieveReq) (RetrieveRes, error) {
