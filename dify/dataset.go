@@ -162,29 +162,31 @@ func ListDatasetMetadata(rail miso.Rail, host string, apiKey string, datasetId s
 	return l, err
 }
 
+type RetrieveModelParam struct {
+	MetadataFilteringConditions struct {
+		Conditions []struct {
+			ComparisonOperator string `json:"comparison_operator"` // contains | not contains | start with | end with | is | is not | empty | not empty | = | ≠ | > | < | ≥ | ≤ | before | after
+			Name               string `json:"name"`
+			Value              string `json:"value"`
+		} `json:"conditions"`
+		LogicalOperator string `json:"logical_operator"` // and | or
+	} `json:"metadata_filtering_conditions"`
+	RerankingEnable bool        `json:"reranking_enable"`
+	RerankingMode   interface{} `json:"reranking_mode"`
+	RerankingModel  *struct {
+		RerankingModelName    string `json:"reranking_model_name"`
+		RerankingProviderName string `json:"reranking_provider_name"`
+	} `json:"reranking_model"`
+	ScoreThreshold        float64  `json:"score_threshold"`
+	ScoreThresholdEnabled bool     `json:"score_threshold_enabled"`
+	SearchMethod          string   `json:"search_method"` // keyword_search | semantic_search | full_text_search | hybrid_search
+	TopK                  *int64   `json:"top_k"`
+	Weights               *float64 `json:"weights"`
+}
+
 type RetrieveReq struct {
-	Query          string `json:"query"`
-	RetrievalModel *struct {
-		MetadataFilteringConditions struct {
-			Conditions []struct {
-				ComparisonOperator string `json:"comparison_operator"` // contains | not contains | start with | end with | is | is not | empty | not empty | = | ≠ | > | < | ≥ | ≤ | before | after
-				Name               string `json:"name"`
-				Value              string `json:"value"`
-			} `json:"conditions"`
-			LogicalOperator string `json:"logical_operator"` // and | or
-		} `json:"metadata_filtering_conditions"`
-		RerankingEnable bool        `json:"reranking_enable"`
-		RerankingMode   interface{} `json:"reranking_mode"`
-		RerankingModel  *struct {
-			RerankingModelName    string `json:"reranking_model_name"`
-			RerankingProviderName string `json:"reranking_provider_name"`
-		} `json:"reranking_model"`
-		ScoreThreshold        float64  `json:"score_threshold"`
-		ScoreThresholdEnabled bool     `json:"score_threshold_enabled"`
-		SearchMethod          string   `json:"search_method"` // keyword_search | semantic_search | full_text_search | hybrid_search
-		TopK                  *int64   `json:"top_k"`
-		Weights               *float64 `json:"weights"`
-	} `json:"retrieval_model"`
+	Query          string              `json:"query"`
+	RetrievalModel *RetrieveModelParam `json:"retrieval_model"`
 }
 
 type RetrieveRes struct {
