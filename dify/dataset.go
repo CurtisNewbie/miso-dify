@@ -25,36 +25,11 @@ const (
 	RerankModeReranker      = "reranking_model"
 )
 
-/*
-RetrievalModel 检索参数（选填，如不填，按照默认方式召回）
-
-SearchMethod (text) 检索方法：以下四个关键字之一，必填
-  - keyword_search: 关键字检索
-  - semantic_search: 语义检索
-  - full_text_search: 全文检索
-  - hybrid_search: 混合检索
-
-RerankingEnable (bool) 是否启用 Reranking，非必填，如果检索模式为 semantic_search 模式或者 hybrid_search 则传值
-
-RerankingModel (object) Rerank 模型配置，非必填，如果启用了 reranking 则传值
-  - RerankingProviderName (string): Rerank 模型提供商
-  - RerankingModelName (string): Rerank 模型名称
-
-RerankingMode (string) Rerank 模式，可选值: weighted_score | reranking_model
-
-# Weights (float) 混合检索模式下语意检索的权重设置
-
-# TopK (integer) 返回结果数量，非必填
-
-# ScoreThresholdEnabled (bool) 是否开启 score 阈值
-
-ScoreThreshold (float) Score 阈值
-*/
 type RetrievalModel struct {
-	SearchMethod          string          `json:"search_method"` // 检索方法，枚举值: keyword_search | semantic_search | full_text_search | hybrid_search
+	SearchMethod          string          `json:"search_method"` // keyword_search | semantic_search | full_text_search | hybrid_search
 	RerankingEnable       bool            `json:"reranking_enable"`
 	RerankingModel        *RerankingModel `json:"reranking_model,omitempty"`
-	RerankingMode         string          `json:"reranking_mode"` // Rerank 模式，枚举值: weighted_score | reranking_model
+	RerankingMode         string          `json:"reranking_mode"` // weighted_score | reranking_model
 	TopK                  int             `json:"top_k"`
 	ScoreThresholdEnabled bool            `json:"score_threshold_enabled"`
 	ScoreThreshold        float64         `json:"score_threshold,omitempty"`
@@ -163,7 +138,8 @@ func ListDatasetMetadata(rail miso.Rail, host string, apiKey string, datasetId s
 }
 
 type MetadataFilteringCondition struct {
-	ComparisonOperator string `json:"comparison_operator"` // contains | not contains | start with | end with | is | is not | empty | not empty | = | ≠ | > | < | ≥ | ≤ | before | after
+	// contains | not contains | start with | end with | is | is not | empty | not empty | = | ≠ | > | < | ≥ | ≤ | before | after
+	ComparisonOperator string `json:"comparison_operator"`
 	Name               string `json:"name"`
 	Value              string `json:"value"`
 }
@@ -184,7 +160,7 @@ type RetrieveModelParam struct {
 	ScoreThreshold        float64  `json:"score_threshold"`
 	ScoreThresholdEnabled bool     `json:"score_threshold_enabled"`
 	SearchMethod          string   `json:"search_method"` // keyword_search | semantic_search | full_text_search | hybrid_search
-	TopK                  *int64   `json:"top_k"`
+	TopK                  int64    `json:"top_k,omitzero"`
 	Weights               *float64 `json:"weights"`
 }
 
