@@ -162,13 +162,15 @@ func ListDatasetMetadata(rail miso.Rail, host string, apiKey string, datasetId s
 	return l, err
 }
 
+type MetadataFilteringCondition struct {
+	ComparisonOperator string `json:"comparison_operator"` // contains | not contains | start with | end with | is | is not | empty | not empty | = | ≠ | > | < | ≥ | ≤ | before | after
+	Name               string `json:"name"`
+	Value              string `json:"value"`
+}
+
 type MetadataFilteringConditions struct {
-	Conditions []struct {
-		ComparisonOperator string `json:"comparison_operator"` // contains | not contains | start with | end with | is | is not | empty | not empty | = | ≠ | > | < | ≥ | ≤ | before | after
-		Name               string `json:"name"`
-		Value              string `json:"value"`
-	} `json:"conditions"`
-	LogicalOperator string `json:"logical_operator"` // and | or
+	Conditions      []MetadataFilteringCondition `json:"conditions"`
+	LogicalOperator string                       `json:"logical_operator"` // and | or
 }
 
 type RetrieveModelParam struct {
