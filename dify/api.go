@@ -94,6 +94,10 @@ func (a Api) ListDatasetMetadata(rail miso.Rail, apiKey string, datasetId string
 	return ListDatasetMetadata(rail, a.host(), apiKey, datasetId)
 }
 
+func (a Api) Retrieve(rail miso.Rail, apiKey string, datasetId string, req RetrieveReq) (RetrieveRes, error) {
+	return Retrieve(rail, a.host(), apiKey, datasetId, req)
+}
+
 // Get default Api.
 //
 // You must [SetupApi] before using it.
