@@ -208,9 +208,9 @@ type RetrievedRecord struct {
 
 type RetrievedSegment struct {
 	Answer      string     `json:"answer"`
-	CompletedAt int64      `json:"completed_at"`
+	CompletedAt *atom.Time `json:"completed_at"`
 	Content     string     `json:"content"`
-	CreatedAt   int64      `json:"created_at"`
+	CreatedAt   *atom.Time `json:"created_at"`
 	CreatedBy   string     `json:"created_by"`
 	DisabledAt  *atom.Time `json:"disabled_at"`
 	DisabledBy  string     `json:"disabled_by"`
@@ -226,7 +226,7 @@ type RetrievedSegment struct {
 	ID            string     `json:"id"`
 	IndexNodeHash string     `json:"index_node_hash"`
 	IndexNodeID   string     `json:"index_node_id"`
-	IndexingAt    int64      `json:"indexing_at"`
+	IndexingAt    *atom.Time `json:"indexing_at"`
 	Keywords      []string   `json:"keywords"`
 	Position      int64      `json:"position"`
 	Status        string     `json:"status"`
