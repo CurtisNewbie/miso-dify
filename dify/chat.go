@@ -307,7 +307,6 @@ type GetConversationVarReq struct {
 	User           string
 	LastId         *string
 	Limit          *int
-	VariableName   *string
 }
 
 func GetConversationVar(rail miso.Rail, host string, apiKey string, req GetConversationVarReq) (GetConversationVarRes, error) {
@@ -323,9 +322,6 @@ func GetConversationVar(rail miso.Rail, host string, apiKey string, req GetConve
 	}
 	if req.Limit != nil {
 		c = c.AddQuery("limit", cast.ToString(*req.Limit))
-	}
-	if req.VariableName != nil {
-		c = c.AddQuery("variable_name", cast.ToString(*req.VariableName))
 	}
 	return res, c.Get().Json(&res)
 }
