@@ -98,6 +98,10 @@ func (a Api) Retrieve(rail miso.Rail, apiKey string, datasetId string, req Retri
 	return Retrieve(rail, a.host(), apiKey, datasetId, req)
 }
 
+func (a Api) RunWorkflow(rail miso.Rail, apiKey string, req WorkflowReq) (WorkflowRes, error) {
+	return RunWorkflow(rail, a.host(), apiKey, req)
+}
+
 // Get default Api.
 //
 // You must [SetupApi] before using it.
