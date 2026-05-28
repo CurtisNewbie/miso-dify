@@ -97,6 +97,7 @@ type UploadDocumentApiReq struct {
 	DocForm            string      `json:"doc_form"`
 	DocType            string      `json:"doc_type"`
 	ProcessRule        ProcessRule `json:"process_rule"`
+	Duplicate          bool        `json:"duplicate"`
 }
 
 type DifyDocument struct {
@@ -220,6 +221,7 @@ func UploadDocument(rail miso.Rail, host string, apiKey string, req UploadDocume
 		DocForm:           req.DocForm,
 		DocType:           req.DocType,
 		ProcessRule:       req.ProcessRule,
+		Duplicate:         false,
 	}
 	if req.OriginalDocumentId != "" {
 		apiReq.OriginalDocumentId = &req.OriginalDocumentId
