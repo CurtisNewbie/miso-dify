@@ -150,9 +150,9 @@ type MetadataFilteringConditions struct {
 }
 
 type RetrieveModelParam struct {
-	MetadataFilteringConditions MetadataFilteringConditions `json:"metadata_filtering_conditions"`
-	RerankingEnable             bool                        `json:"reranking_enable"`
-	RerankingMode               string                      `json:"reranking_mode"` // weighted_score | reranking_model
+	MetadataFilteringConditions *MetadataFilteringConditions `json:"metadata_filtering_conditions,omitempty"`
+	RerankingEnable             bool                         `json:"reranking_enable"`
+	RerankingMode               string                       `json:"reranking_mode"` // weighted_score | reranking_model
 	RerankingModel              *struct {
 		RerankingModelName    string `json:"reranking_model_name"`
 		RerankingProviderName string `json:"reranking_provider_name"`
@@ -177,7 +177,7 @@ type RetrieveRes struct {
 }
 
 type RetrievedRecord struct {
-	Score        int64            `json:"score"`
+	Score        float64          `json:"score"`
 	Segment      RetrievedSegment `json:"segment"`
 	TsnePosition interface{}      `json:"tsne_position"`
 }
