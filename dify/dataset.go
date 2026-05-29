@@ -152,16 +152,16 @@ type MetadataFilteringConditions struct {
 type RetrieveModelParam struct {
 	MetadataFilteringConditions MetadataFilteringConditions `json:"metadata_filtering_conditions"`
 	RerankingEnable             bool                        `json:"reranking_enable"`
-	RerankingMode               interface{}                 `json:"reranking_mode"`
+	RerankingMode               string                      `json:"reranking_mode"` // weighted_score | reranking_model
 	RerankingModel              *struct {
 		RerankingModelName    string `json:"reranking_model_name"`
 		RerankingProviderName string `json:"reranking_provider_name"`
 	} `json:"reranking_model"`
-	ScoreThreshold        float64  `json:"score_threshold"`
-	ScoreThresholdEnabled bool     `json:"score_threshold_enabled"`
-	SearchMethod          string   `json:"search_method"` // keyword_search | semantic_search | full_text_search | hybrid_search
-	TopK                  int64    `json:"top_k,omitzero"`
-	Weights               *float64 `json:"weights"`
+	ScoreThreshold        float64      `json:"score_threshold"`
+	ScoreThresholdEnabled bool         `json:"score_threshold_enabled"`
+	SearchMethod          string       `json:"search_method"` // keyword_search | semantic_search | full_text_search | hybrid_search
+	TopK                  int64        `json:"top_k,omitzero"`
+	Weights               *WeightModel `json:"weights"`
 }
 
 type RetrieveReq struct {
