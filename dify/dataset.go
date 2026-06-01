@@ -64,8 +64,11 @@ E.g.,
 		}
 */
 type WeightModel struct {
-	WeightType     *string               `json:"weight_type,omitempty"`
-	VectorSetting  *WeightVectorSetting  `json:"vector_setting,omitempty"`
+	// WeightType specifies the weighting strategy, e.g. "customized".
+	WeightType *string `json:"weight_type,omitempty"`
+	// VectorSetting configures vector (semantic) search weight and the embedding model used.
+	VectorSetting *WeightVectorSetting `json:"vector_setting,omitempty"`
+	// KeywordSetting configures keyword (full-text) search weight.
 	KeywordSetting *WeightKeywordSetting `json:"keyword_setting,omitempty"`
 }
 
@@ -145,23 +148,34 @@ type MetadataFilteringCondition struct {
 }
 
 type MetadataFilteringConditions struct {
-	Conditions      []MetadataFilteringCondition `json:"conditions"`
-	LogicalOperator string                       `json:"logical_operator"` // and | or
+	// Conditions is the list of individual metadata filter conditions to evaluate.
+	Conditions []MetadataFilteringCondition `json:"conditions"`
+	// LogicalOperator combines multiple conditions: "and" or "or".
+	LogicalOperator string `json:"logical_operator"`
 }
 
 type RetrieveModelParam struct {
+	// MetadataFilteringConditions specifies optional metadata-based filters applied before retrieval.
 	MetadataFilteringConditions *MetadataFilteringConditions `json:"metadata_filtering_conditions,omitempty"`
-	RerankingEnable             bool                         `json:"reranking_enable"`
-	RerankingMode               string                       `json:"reranking_mode"` // weighted_score | reranking_model
-	RerankingModel              *struct {
+	// RerankingEnable controls whether reranking is applied to the retrieved results.
+	RerankingEnable bool `json:"reranking_enable"`
+	// RerankingMode determines the reranking strategy: "weighted_score" or "reranking_model".
+	RerankingMode string `json:"reranking_mode"`
+	// RerankingModel specifies the reranking model and provider when RerankingMode is "reranking_model".
+	RerankingModel *struct {
 		RerankingModelName    string `json:"reranking_model_name"`
 		RerankingProviderName string `json:"reranking_provider_name"`
 	} `json:"reranking_model"`
-	ScoreThreshold        float64      `json:"score_threshold"`
-	ScoreThresholdEnabled bool         `json:"score_threshold_enabled"`
-	SearchMethod          string       `json:"search_method"` // keyword_search | semantic_search | full_text_search | hybrid_search
-	TopK                  int64        `json:"top_k,omitzero"`
-	Weights               *WeightModel `json:"weights"`
+	// ScoreThreshold is the minimum relevance score a result must meet when ScoreThresholdEnabled is true.
+	ScoreThreshold float64 `json:"score_threshold"`
+	// ScoreThresholdEnabled controls whether ScoreThreshold is enforced.
+	ScoreThresholdEnabled bool `json:"score_threshold_enabled"`
+	// SearchMethod selects the retrieval algorithm: "keyword_search", "semantic_search", "full_text_search", or "hybrid_search".
+	SearchMethod string `json:"search_method"`
+	// TopK is the maximum number of results to return.
+	TopK int64 `json:"top_k,omitzero"`
+	// Weights configures the score weighting strategy used during hybrid search.
+	Weights *WeightModel `json:"weights"`
 }
 
 type RetrieveReq struct {
